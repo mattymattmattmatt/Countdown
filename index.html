@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            height: 100%;
+            overflow: hidden;
+        }
+        .background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1s ease-in-out;
+        }
+        .overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .timer {
+            font-family: 'Poppins', sans-serif;
+            color: #ffffff;
+            text-align: center;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.6);
+        }
+        .time-unit {
+            display: inline-block;
+            margin: 0 20px;
+        }
+        .time-value {
+            font-size: 5rem;
+            font-weight: 800;
+        }
+        .label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .time-value {
+                font-size: 3rem;
+            }
+            .label {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="background" id="background"></div>
+
+<div class="overlay">
+    <div class="timer">
+        <div class="time-unit">
+            <div class="time-value" id="months">00</div>
+            <div class="label">Months</div>
+        </div>
+        <div class="time-unit">
+            <div class="time-value" id="days">00</div>
+            <div class="label">Days</div>
+        </div>
+        <div class="time-unit">
+            <div class="time-value" id="hours">00</div>
+            <div class="label">Hours</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set your countdown date here (YYYY-MM-DD HH:MM:SS)
+    const countdownDate = new Date("2025-12-31T00:00:00").getTime(); // Change this later
+
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = countdownDate - now;
+
+        const months = Math.floor(distance / (1000 * 60 * 60 * 24 * 30));
+        const days = Math.floor((distance % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        document.getElementById("months").innerText = months.toString().padStart(2, '0');
+        document.getElementById("days").innerText = days.toString().padStart(2, '0');
+        document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000 * 60 * 60); // updates every hour
+
+    // Background image change logic every 24 hours
+    const totalImages = 10; // Set total number of images you have
+    function updateBackgroundImage() {
+        const start = new Date("2025-01-01"); // Set a fixed starting date
+        const today = new Date();
+        const daysPassed = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+        const imageNumber = (daysPassed % totalImages) + 1;
+        const formattedNumber = imageNumber.toString().padStart(2, '0');
+
+        const imageUrl = `images/${formattedNumber}.png`;
+        document.getElementById("background").style.backgroundImage = `url('${imageUrl}')`;
+    }
+
+    updateBackgroundImage();
+    setInterval(updateBackgroundImage, 1000 * 60 * 60); // checks hourly, updates daily
+
+</script>
+
+</body>
+</html>
