@@ -3,14 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Countdown Timer</title>
+    <title>Stylish Countdown Timer</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * {margin:0;padding:0;box-sizing:border-box;}
         body, html {
             height: 100%;
             overflow: hidden;
@@ -19,49 +15,42 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            top: 0;
-            left: 0;
             background-size: cover;
             background-position: center;
-            transition: background-image 1s ease-in-out;
+            transition: background-image 0.8s ease-in-out;
         }
         .overlay {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width:100%;height:100%;
+            background:rgba(0,0,0,0.5);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            position:absolute;
+            top:0;left:0;
         }
         .timer {
-            font-family: 'Poppins', sans-serif;
-            color: #ffffff;
-            text-align: center;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.6);
-        }
-        .time-unit {
-            display: inline-block;
-            margin: 0 20px;
+            color:#fff;
+            font-family:'Poppins', sans-serif;
+            text-align:center;
+            text-shadow:0 4px 8px rgba(0,0,0,0.7);
         }
         .time-value {
-            font-size: 5rem;
-            font-weight: 800;
+            font-size:5rem;
+            font-weight:800;
+            margin:0 1rem;
         }
         .label {
-            font-size: 1.2rem;
-            font-weight: 600;
-            letter-spacing: 2px;
-            margin-top: 10px;
+            font-size:1.2rem;
+            letter-spacing:2px;
+            margin-top:8px;
+        }
+        .time-unit {
+            display:inline-block;
         }
 
-        @media (max-width: 768px) {
-            .time-value {
-                font-size: 3rem;
-            }
-            .label {
-                font-size: 1rem;
-            }
+        @media(max-width:768px){
+            .time-value{font-size:3rem;}
+            .label{font-size:0.9rem;}
         }
     </style>
 </head>
@@ -87,8 +76,8 @@
 </div>
 
 <script>
-    // Set your countdown date here (YYYY-MM-DD HH:MM:SS)
-    const countdownDate = new Date("2025-12-31T00:00:00").getTime(); // Change this later
+    // Countdown Date (change this to your date)
+    const countdownDate = new Date("2025-12-31T00:00:00").getTime();
 
     function updateCountdown() {
         const now = new Date().getTime();
@@ -104,23 +93,30 @@
     }
 
     updateCountdown();
-    setInterval(updateCountdown, 1000 * 60 * 60); // updates every hour
+    setInterval(updateCountdown, 1000 * 60 * 60); // update every hour
 
-    // Background image change logic every 24 hours
-    const totalImages = 10; // Set total number of images you have
-    function updateBackgroundImage() {
-        const start = new Date("2025-01-01"); // Set a fixed starting date
+    // Daily random background image (20 images total)
+    function dailyRandomImage() {
+        const totalImages = 20;
+
+        // Get current day as a seed
         const today = new Date();
-        const daysPassed = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-        const imageNumber = (daysPassed % totalImages) + 1;
-        const formattedNumber = imageNumber.toString().padStart(2, '0');
+        const seed = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+
+        // Simple seeded random generator
+        let hash = 0;
+        for (let i = 0; i < seed.length; i++) {
+            hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash % totalImages) + 1;
+        const formattedNumber = index.toString().padStart(2, '0');
 
         const imageUrl = `images/${formattedNumber}.png`;
         document.getElementById("background").style.backgroundImage = `url('${imageUrl}')`;
     }
 
-    updateBackgroundImage();
-    setInterval(updateBackgroundImage, 1000 * 60 * 60); // checks hourly, updates daily
+    dailyRandomImage();
+    setInterval(dailyRandomImage, 1000 * 60 * 60); // check hourly, changes daily
 
 </script>
 
