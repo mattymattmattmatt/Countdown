@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stylish Countdown Timer</title>
+    <title>Countdown To Retirement</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap" rel="stylesheet">
     <style>
         * {margin:0;padding:0;box-sizing:border-box;}
@@ -95,28 +95,17 @@
     updateCountdown();
     setInterval(updateCountdown, 1000 * 60 * 60); // update every hour
 
-    // Daily random background image (20 images total)
-    function dailyRandomImage() {
+    // Random background image every refresh (20 images total)
+    function randomImageEveryRefresh() {
         const totalImages = 20;
-
-        // Get current day as a seed
-        const today = new Date();
-        const seed = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
-
-        // Simple seeded random generator
-        let hash = 0;
-        for (let i = 0; i < seed.length; i++) {
-            hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const index = Math.abs(hash % totalImages) + 1;
-        const formattedNumber = index.toString().padStart(2, '0');
-
+        const randomIndex = Math.floor(Math.random() * totalImages) + 1;
+        const formattedNumber = randomIndex.toString().padStart(2, '0');
         const imageUrl = `images/${formattedNumber}.png`;
+
         document.getElementById("background").style.backgroundImage = `url('${imageUrl}')`;
     }
 
-    dailyRandomImage();
-    setInterval(dailyRandomImage, 1000 * 60 * 60); // check hourly, changes daily
+    randomImageEveryRefresh();
 
 </script>
 
