@@ -120,7 +120,7 @@
   }
 
   function setRandomImageHourly() {
-    const totalImages = 40; // or more
+    const totalImages = 81; // or more
     const seed = getHourlySeed();
     const randomNumber = (seededRandom(seed) % totalImages) + 1;
     const formatted = randomNumber.toString().padStart(2, '0');
