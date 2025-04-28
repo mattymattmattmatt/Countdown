@@ -57,6 +57,10 @@
       color: rgba(255, 255, 255, 0.7);
       text-shadow: 0 0 5px rgba(0,0,0,0.4);
     }
+    .fade-out {
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
     @media(max-width:768px){
       .time-value{font-size:3rem;}
       .label{font-size:0.9rem;}
@@ -141,14 +145,17 @@
     const formatted = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     document.getElementById("imageCountdown").innerText = `Next image in ${formatted}`;
 
-    // Auto-refresh exactly at 00:00
+    // Auto-refresh exactly at 00:00 with fade-out
     if (minutes === 0 && seconds === 0) {
-      location.reload();
+      document.body.classList.add('fade-out');
+      setTimeout(() => {
+        location.reload();
+      }, 1000); // wait 1 second for fade-out animation
     }
   }
 
   setRandomImageHourly();
-  setInterval(setRandomImageHourly, 1000 * 60 * 60); // just in case, refresh image logic hourly
+  setInterval(setRandomImageHourly, 1000 * 60 * 60); // refresh image hourly (backup)
 
   updateImageCountdown();
   setInterval(updateImageCountdown, 1000); // update every second
