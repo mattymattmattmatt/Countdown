@@ -2,57 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Countdown To Retirement</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap" rel="stylesheet" />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html {
-      height: 100%;
-      overflow: hidden;
-      opacity: 0;                 /* start invisible */
-      transition: opacity 1s ease;/* fade in/out */
-    }
-    body.fade-in {
+    /* reset & full‐screen */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; overflow:hidden; }
+    
+    /* wrapper for fade in/out */
+    #app {
+      position: relative;
+      width:100%; height:100%;
       opacity: 1;
+      transition: opacity 1s ease;
     }
+    #app.hidden {
+      opacity: 0;
+    }
+
+    /* background image */
     .background {
       position: absolute;
-      width: 100%;
-      height: 100%;
+      width:100%; height:100%;
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
       transition: background-image 0.8s ease-in-out;
     }
+
+    /* semi-transparent overlay + centering */
     .overlay {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      top:0; left:0;
+      width:100%; height:100%;
       background: rgba(0,0,0,0.5);
       display: flex;
       align-items: center;
       justify-content: center;
     }
+
+    /* countdown timer styling */
     .timer {
       font-family: 'Poppins', sans-serif;
       color: #fff;
       text-align: center;
       text-shadow: 0 4px 8px rgba(0,0,0,0.7);
     }
+    .time-unit { display: inline-block; margin: 0 1rem; }
     .time-value {
       font-size: 5rem;
       font-weight: 800;
-      margin: 0 1rem;
     }
     .label {
       font-size: 1.2rem;
       letter-spacing: 2px;
-      margin-top: 8px;
+      margin-top: 0.5rem;
     }
-    .time-unit {
-      display: inline-block;
-    }
+
+    /* small image countdown */
     .image-countdown {
       position: absolute;
       bottom: 10px;
@@ -62,44 +70,42 @@
       color: rgba(255,255,255,0.7);
       text-shadow: 0 0 5px rgba(0,0,0,0.4);
     }
-    /* fade-out class uses the same transition */
-    body.fade-out {
-      opacity: 0;
-    }
-    @media(max-width: 768px) {
+
+    @media(max-width:768px) {
       .time-value { font-size: 3rem; }
       .label { font-size: 0.9rem; }
     }
   </style>
 </head>
 <body>
-
-  <div class="background" id="background"></div>
-
-  <div class="overlay">
-    <div class="timer">
-      <div class="time-unit">
-        <div class="time-value" id="months">00</div>
-        <div class="label">Months</div>
-      </div>
-      <div class="time-unit">
-        <div class="time-value" id="days">00</div>
-        <div class="label">Days</div>
-      </div>
-      <div class="time-unit">
-        <div class="time-value" id="hours">00</div>
-        <div class="label">Hours</div>
+  <div id="app" class="hidden">
+    <div class="background" id="background"></div>
+    <div class="overlay">
+      <div class="timer">
+        <div class="time-unit">
+          <div class="time-value" id="months">00</div>
+          <div class="label">Months</div>
+        </div>
+        <div class="time-unit">
+          <div class="time-value" id="days">00</div>
+          <div class="label">Days</div>
+        </div>
+        <div class="time-unit">
+          <div class="time-value" id="hours">00</div>
+          <div class="label">Hours</div>
+        </div>
       </div>
     </div>
+    <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
   </div>
 
-  <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
-
   <script>
-    // 1) Immediately fade in
-    document.body.classList.add('fade-in');
+    // FADE IN ON LOAD
+    window.addEventListener('load', () => {
+      document.getElementById('app').classList.remove('hidden');
+    });
 
-    // 2) Countdown to Aug 15, 2025 @ 5:30pm
+    // 1) RETIREMENT COUNTDOWN
     const countdownDate = new Date("2025-08-15T17:30:00").getTime();
     function updateCountdown() {
       const now = Date.now();
@@ -112,46 +118,49 @@
       document.getElementById("hours").innerText  = String(hours).padStart(2,'0');
     }
     updateCountdown();
-    setInterval(updateCountdown, 1000*60*60); // hourly
+    setInterval(updateCountdown, 1000*60*60);
 
-    // 3) Seeded “random” per-hour image
+    // 2) SEEDED RANDOM IMAGE PER HOUR
     function getSeed() {
       const d = new Date();
       return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}`;
     }
-    function seededRandom(s) {
-      let h=0;
-      for(let i=0;i<s.length;i++) h = s.charCodeAt(i) + ((h<<5)-h);
-      return Math.abs(h);
+    function seededRandom(str) {
+      let hash=0;
+      for(let i=0;i<str.length;i++){
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return Math.abs(hash);
     }
     function setImage() {
-      const total = 100; // # of images
-      const n = (seededRandom(getSeed()) % total) + 1;
-      const img = String(n).padStart(2,'0') + '.png';
-      document.getElementById("background").style.backgroundImage = `url('images/${img}')`;
+      const totalImages = 100;
+      const idx = (seededRandom(getSeed()) % totalImages) + 1;
+      const file = String(idx).padStart(2,'0') + '.png';
+      document.getElementById('background').style.backgroundImage = `url('images/${file}')`;
     }
     setImage();
-    setInterval(setImage, 1000*60*60); // backup
+    setInterval(setImage, 1000*60*60); // backup hourly
 
-    // 4) “Next image in MM:SS” + auto-reload on top-of-hour with fade-out
+    // 3) IMAGE COUNTDOWN + FADE‐OUT + RELOAD
     function updateImageCountdown() {
       const now = new Date();
       const next = new Date(now);
       next.setMinutes(60,0,0);
       const diff = next - now;
-      const m = Math.floor((diff%(1000*60*60))/(1000*60));
-      const s = Math.floor((diff%(1000*60))/1000);
-      document.getElementById("imageCountdown").innerText =
+      const m = Math.floor((diff % (1000*60*60)) / (1000*60));
+      const s = Math.floor((diff % (1000*60)) / 1000);
+      document.getElementById('imageCountdown').innerText =
         `Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-      if (m===0 && s===0) {
-        document.body.classList.remove('fade-in');
-        document.body.classList.add('fade-out');
+
+      if (m === 0 && s === 0) {
+        // fade out, then reload
+        const app = document.getElementById('app');
+        app.classList.add('hidden');
         setTimeout(() => location.reload(), 1000);
       }
     }
     updateImageCountdown();
     setInterval(updateImageCountdown, 1000);
   </script>
-
 </body>
 </html>
