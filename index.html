@@ -10,6 +10,11 @@
     body, html {
       height: 100%;
       overflow: hidden;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    body.fade-in {
+      opacity: 1;
     }
     .background {
       position: absolute;
@@ -91,6 +96,11 @@
 <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
 
 <script>
+  // Fade-in after page load
+  window.addEventListener('load', () => {
+    document.body.classList.add('fade-in');
+  });
+
   // Target: August 15, 2025 at 5:30 PM
   const countdownDate = new Date("2025-08-15T17:30:00").getTime();
 
@@ -147,6 +157,7 @@
 
     // Auto-refresh exactly at 00:00 with fade-out
     if (minutes === 0 && seconds === 0) {
+      document.body.classList.remove('fade-in');
       document.body.classList.add('fade-out');
       setTimeout(() => {
         location.reload();
