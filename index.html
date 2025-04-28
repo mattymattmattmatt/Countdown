@@ -120,7 +120,7 @@
   }
 
   function setRandomImageHourly() {
-    const totalImages = 100; // or more
+    const totalImages = 100; // Now supporting 100 images
     const seed = getHourlySeed();
     const randomNumber = (seededRandom(seed) % totalImages) + 1;
     const formatted = randomNumber.toString().padStart(2, '0');
@@ -132,7 +132,7 @@
   function updateImageCountdown() {
     const now = new Date();
     const nextHour = new Date(now);
-    nextHour.setMinutes(60, 0, 0); // top of the next hour
+    nextHour.setMinutes(60, 0, 0); // Top of the next hour
 
     const diff = Math.max(0, nextHour - now);
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -140,10 +140,15 @@
 
     const formatted = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     document.getElementById("imageCountdown").innerText = `Next image in ${formatted}`;
+
+    // Auto-refresh exactly at 00:00
+    if (minutes === 0 && seconds === 0) {
+      location.reload();
+    }
   }
 
   setRandomImageHourly();
-  setInterval(setRandomImageHourly, 1000 * 60 * 60); // update hourly
+  setInterval(setRandomImageHourly, 1000 * 60 * 60); // just in case, refresh image logic hourly
 
   updateImageCountdown();
   setInterval(updateImageCountdown, 1000); // update every second
