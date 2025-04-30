@@ -15,7 +15,6 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body { width:100%; height:100%; overflow:hidden; }
 
-    /* Background with Ken Burns */
     .background {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background-size: contain;
@@ -29,7 +28,6 @@
       to   { transform: scale(1.05) translate(-2%, -2%); }
     }
 
-    /* Centered overlay */
     .overlay {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background: var(--overlay-bg);
@@ -37,7 +35,6 @@
       flex-direction: column;
     }
 
-    /* Countdown timer */
     .timer {
       font-family: var(--font-family);
       color: var(--text-color);
@@ -60,7 +57,6 @@
       margin-top:0.5rem;
     }
 
-    /* Fun Fact section */
     .fun-fact-container {
       text-align:center;
       margin-top:0.75rem;
@@ -83,7 +79,6 @@
       opacity:0.85;
     }
 
-    /* Pie-wedge & label half-size */
     .image-countdown-wrapper {
       position:absolute; bottom:10px; right:10px;
       display:flex; align-items:center; gap:4px;
@@ -101,7 +96,6 @@
       text-shadow:0 0 4px rgba(0,0,0,0.3);
     }
 
-    /* Time’s Up modal */
     .modal {
       position:fixed; top:0; left:0; width:100%; height:100%;
       background: rgba(0,0,0,0.8);
@@ -134,7 +128,6 @@
   <div class="background" id="background"></div>
 
   <div class="overlay">
-    <!-- Countdown -->
     <div class="timer" role="timer" aria-live="polite">
       <time datetime="2025-08-15T17:30:00Z">
         <div class="time-unit">
@@ -152,20 +145,17 @@
       </time>
     </div>
 
-    <!-- Fun Fact -->
     <div class="fun-fact-container">
       <div class="fun-title">Fun Fact:</div>
       <div class="fun-fact" id="funFact">Loading fun fact…</div>
     </div>
   </div>
 
-  <!-- Pie‐wedge timer + label -->
   <div class="image-countdown-wrapper">
     <div class="pie-timer" id="pieTimer"></div>
     <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
   </div>
 
-  <!-- Time’s Up modal -->
   <div class="modal" id="timeUpModal">
     <div class="content">
       <h1>🎉 Congratulations!</h1>
@@ -198,7 +188,7 @@
     updateCountdown();
     setInterval(updateCountdown,250);
 
-    // Image shuffle + display
+    // Image logic
     function xfnv1a(s){
       let h=2166136261;
       for(let i=0;i<s.length;i++){
@@ -227,41 +217,37 @@
         [imgs[i],imgs[j]]=[imgs[j],imgs[i]];
       }
       const idx = hourCount % totalImages;
-      document.getElementById('background').style.backgroundImage = `url('images/${imgs[idx]}')`;
-      new Image().src = `images/${imgs[(idx+1)%totalImages]}`;
+      document.getElementById('background')
+              .style.backgroundImage = `url('images/${imgs[idx]}')`;
     }
     setImage();
-    setInterval(setImage,1000*60*60);
 
-    // Pie-wedge timer + label
+    // Pie-timer & reload on hour
     const pie = document.getElementById('pieTimer');
     const countdownLabel = document.getElementById('imageCountdown');
     function updateImageCountdown(){
-      const now = new Date(), next = new Date(now);
+      const now=new Date(), next=new Date(now);
       next.setMinutes(60,0,0);
-      const diff = next - now;
-      const m    = Math.floor((diff%3600000)/60000),
-            s    = Math.floor((diff%60000)/1000),
-            frac = diff/3600000;
+      const diff=next-now;
+      const m=Math.floor((diff%3600000)/60000),
+            s=Math.floor((diff%60000)/1000),
+            frac=diff/3600000;
       countdownLabel.innerText = `Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
       const deg = Math.max(0, frac*360);
       pie.style.background = `conic-gradient(var(--accent-color) ${deg}deg, transparent ${deg}deg)`;
-      if(diff<=0) setImage();
+      if(diff <= 0){
+        location.reload();
+      }
     }
     updateImageCountdown();
     setInterval(updateImageCountdown,250);
 
-    // Fun Fact loader
+    // Fun facts
     let facts=[];
     fetch('facts.json')
       .then(r=>{ if(!r.ok) throw Error(r.status); return r.json(); })
-      .then(data=>{
-        facts=data; showFunFact(); setInterval(showFunFact,1000*60*60);
-      })
-      .catch(e=>{
-        console.error(e);
-        document.getElementById('funFact').innerText='Error loading fun facts.';
-      });
+      .then(data=>{ facts=data; showFunFact(); setInterval(showFunFact,1000*60*60); })
+      .catch(e=>{ console.error(e); document.getElementById('funFact').innerText='Error loading fun facts.'; });
     function showFunFact(){
       if(!facts.length) return;
       const hc=Math.floor(Date.now()/(1000*60*60));
