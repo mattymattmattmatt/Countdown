@@ -15,6 +15,7 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body { width:100%; height:100%; overflow:hidden; }
 
+    /* Background with Ken Burns */
     .background {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background-size: contain;
@@ -28,6 +29,7 @@
       to   { transform: scale(1.05) translate(-2%, -2%); }
     }
 
+    /* Centered overlay */
     .overlay {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background: var(--overlay-bg);
@@ -35,11 +37,13 @@
       flex-direction: column;
     }
 
+    /* Countdown timer (75% opacity) */
     .timer {
       font-family: var(--font-family);
       color: var(--text-color);
       text-align: center;
       text-shadow: 0 4px 8px rgba(0,0,0,0.7);
+      opacity: 0.75;
     }
     .time-unit { display:inline-block; margin:0 1rem; }
     .time-value {
@@ -57,6 +61,7 @@
       margin-top:0.5rem;
     }
 
+    /* Fun Fact (75% opacity) */
     .fun-fact-container {
       text-align:center;
       margin-top:0.75rem;
@@ -67,7 +72,7 @@
       color: var(--text-color);
       font-weight:600;
       font-size:0.85rem;
-      opacity:0.8;
+      opacity:0.75;
       margin-bottom:0.2rem;
     }
     .fun-fact {
@@ -76,9 +81,10 @@
       font-size:0.75rem;
       color: var(--text-color);
       text-shadow:0 0 3px rgba(0,0,0,0.4);
-      opacity:0.85;
+      opacity:0.75;
     }
 
+    /* Pie‐wedge timer mirrored & label */
     .image-countdown-wrapper {
       position:absolute; bottom:10px; right:10px;
       display:flex; align-items:center; gap:4px;
@@ -88,6 +94,7 @@
       width:18px;
       height:18px;
       border-radius:50%;
+      transform: scaleX(-1);
       background: conic-gradient(var(--accent-color) 360deg, transparent 0deg);
     }
     .image-countdown {
@@ -96,6 +103,7 @@
       text-shadow:0 0 4px rgba(0,0,0,0.3);
     }
 
+    /* Time’s Up modal */
     .modal {
       position:fixed; top:0; left:0; width:100%; height:100%;
       background: rgba(0,0,0,0.8);
@@ -128,6 +136,7 @@
   <div class="background" id="background"></div>
 
   <div class="overlay">
+    <!-- Countdown -->
     <div class="timer" role="timer" aria-live="polite">
       <time datetime="2025-08-15T17:30:00Z">
         <div class="time-unit">
@@ -145,17 +154,20 @@
       </time>
     </div>
 
+    <!-- Fun Fact -->
     <div class="fun-fact-container">
       <div class="fun-title">Fun Fact:</div>
       <div class="fun-fact" id="funFact">Loading fun fact…</div>
     </div>
   </div>
 
+  <!-- Pie‐wedge timer + label -->
   <div class="image-countdown-wrapper">
     <div class="pie-timer" id="pieTimer"></div>
     <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
   </div>
 
+  <!-- Time’s Up modal -->
   <div class="modal" id="timeUpModal">
     <div class="content">
       <h1>🎉 Congratulations!</h1>
@@ -188,7 +200,7 @@
     updateCountdown();
     setInterval(updateCountdown,250);
 
-    // Image logic
+    // Image shuffle + display
     function xfnv1a(s){
       let h=2166136261;
       for(let i=0;i<s.length;i++){
@@ -222,22 +234,20 @@
     }
     setImage();
 
-    // Pie-timer & reload on hour
+    // Pie‐wedge timer + reload on hour
     const pie = document.getElementById('pieTimer');
     const countdownLabel = document.getElementById('imageCountdown');
     function updateImageCountdown(){
       const now=new Date(), next=new Date(now);
       next.setMinutes(60,0,0);
-      const diff=next-now;
-      const m=Math.floor((diff%3600000)/60000),
-            s=Math.floor((diff%60000)/1000),
-            frac=diff/3600000;
+      const diff = next - now;
+      const m    = Math.floor((diff%3600000)/60000),
+            s    = Math.floor((diff%60000)/1000),
+            frac = diff/3600000;
       countdownLabel.innerText = `Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
       const deg = Math.max(0, frac*360);
       pie.style.background = `conic-gradient(var(--accent-color) ${deg}deg, transparent ${deg}deg)`;
-      if(diff <= 0){
-        location.reload();
-      }
+      if(diff <= 0) location.reload();
     }
     updateImageCountdown();
     setInterval(updateImageCountdown,250);
@@ -258,8 +268,7 @@
     // Time’s Up modal
     function showTimeUpModal(){ document.getElementById('timeUpModal').style.display='flex'; }
     document.getElementById('closeModal').addEventListener('click',
-      ()=>document.getElementById('timeUpModal').style.display='none'
-    );
+      ()=>document.getElementById('timeUpModal').style.display='none');
   </script>
 </body>
 </html>
