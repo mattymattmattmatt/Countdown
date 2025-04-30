@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Countdown To Retirement</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --overlay-bg: rgba(0, 0, 0, 0.5);
-      --text-color: #ffffff;
+      --overlay-bg: rgba(0,0,0,0.5);
+      --text-color: #fff;
       --font-family: 'Poppins', sans-serif;
       --accent-color: #ffd700;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body { width:100%; height:100%; overflow:hidden; }
 
-    /* Ken Burns but contained */
+    /* Ken Burns with contain */
     .background {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background-size: contain;
@@ -38,12 +38,12 @@
     .timer {
       font-family: var(--font-family);
       color: var(--text-color);
-      text-align: center;
+      text-align:center;
       text-shadow: 0 4px 8px rgba(0,0,0,0.7);
     }
     .time-unit { display:inline-block; margin:0 1rem; }
     .time-value {
-      font-size: clamp(3rem, 8vw, 6rem);
+      font-size: clamp(3rem,8vw,6rem);
       font-weight:800;
       transition: transform 0.3s, color 0.3s;
     }
@@ -52,9 +52,9 @@
       color: var(--accent-color);
     }
     .label {
-      font-size: clamp(0.75rem, 2vw, 1.2rem);
+      font-size: clamp(0.75rem,2vw,1.2rem);
       letter-spacing:2px;
-      margin-top: 0.5rem;
+      margin-top:0.5rem;
     }
 
     .image-countdown-wrapper {
@@ -63,25 +63,26 @@
       font-family: var(--font-family);
     }
     .image-countdown {
-      font-size: 0.75rem;
+      font-size:0.75rem;
       color: rgba(255,255,255,0.85);
       text-shadow: 0 0 5px rgba(0,0,0,0.4);
     }
     .progress-ring {
-      width: 48px; height:48px;
-      transform: rotate(-90deg);
+      width:48px; height:48px;
+      transform: rotate(-90deg);             /* start at 12 o'clock */
+      transform-origin: center;
     }
     .progress-ring__circle {
       stroke: var(--accent-color);
       stroke-width:4;
       fill: transparent;
-      transition: stroke-dashoffset 0.1s linear;
+      /* dasharray & dashoffset set in JS */
     }
 
     .modal {
       position:fixed; top:0; left:0; width:100%; height:100%;
       background: rgba(0,0,0,0.8);
-      display: none;
+      display:none;
       align-items:center; justify-content:center;
       font-family: var(--font-family);
       color: var(--text-color);
@@ -89,17 +90,13 @@
       padding:20px;
     }
     .modal .content {
-      background: #fff;
-      color: #000;
-      padding:30px;
-      border-radius:10px;
-      max-width:90%;
-      box-shadow:0 4px 10px rgba(0,0,0,0.3);
+      background:#fff; color:#000;
+      padding:30px; border-radius:10px;
+      max-width:90%; box-shadow:0 4px 10px rgba(0,0,0,0.3);
     }
     .modal .content h1 { margin-bottom:0.5em; }
     .modal .content button {
-      margin-top:1em;
-      padding:0.5em 1em;
+      margin-top:1em; padding:0.5em 1em;
       font-family: var(--font-family);
       background: var(--accent-color);
       border:none; border-radius:4px;
@@ -118,7 +115,7 @@
 
   <div class="overlay">
     <div class="timer" role="timer" aria-live="polite">
-      <time id="countdownTime" datetime="2025-08-15T17:30:00Z">
+      <time datetime="2025-08-15T17:30:00Z">
         <div class="time-unit">
           <div class="time-value" id="months">00</div>
           <div class="label">Months</div>
@@ -150,104 +147,85 @@
     </div>
   </div>
 
-<script>
-  // Countdown + animated digits
-  const countdownDate = new Date("2025-08-15T17:30:00").getTime();
-  function animateValue(id, value) {
-    const el = document.getElementById(id);
-    if (el.innerText !== value) {
-      el.innerText = value;
-      el.classList.add('animate');
-      setTimeout(() => el.classList.remove('animate'), 300);
+  <script>
+    // -- Countdown + animated digits
+    const countdownDate = new Date("2025-08-15T17:30:00").getTime();
+    function animateValue(id, val) {
+      const el = document.getElementById(id);
+      if (el.innerText !== val) {
+        el.innerText = val;
+        el.classList.add('animate');
+        setTimeout(()=>el.classList.remove('animate'),300);
+      }
     }
-  }
-  function updateCountdown() {
-    const now = Date.now();
-    const diff = countdownDate - now;
-    if (diff <= 0) return showTimeUpModal();
-    const months = Math.floor(diff / (1000*60*60*24*30));
-    const days   = Math.floor((diff % (1000*60*60*24*30)) / (1000*60*60*24));
-    const hours  = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-    animateValue('months', String(months).padStart(2,'0'));
-    animateValue('days',   String(days  ).padStart(2,'0'));
-    animateValue('hours',  String(hours ).padStart(2,'0'));
-  }
-  updateCountdown();
-  setInterval(updateCountdown, 250);
-
-  // Seeded shuffle & preload
-  function xfnv1a(str) {
-    let h = 2166136261;
-    for (let i=0; i<str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 16777619);
+    function updateCountdown() {
+      const now = Date.now(), diff = countdownDate - now;
+      if (diff <= 0) return showTimeUpModal();
+      const months = Math.floor(diff/(1000*60*60*24*30));
+      const days   = Math.floor((diff%(1000*60*60*24*30))/(1000*60*60*24));
+      const hours  = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+      animateValue('months', String(months).padStart(2,'0'));
+      animateValue('days',   String(days  ).padStart(2,'0'));
+      animateValue('hours',  String(hours ).padStart(2,'0'));
     }
-    return h >>> 0;
-  }
-  function mulberry32(a) {
-    return function() {
-      a |= 0; a = a + 0x6D2B79F5 | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-  const totalImages = 100;
-  const hourCount   = Math.floor(Date.now() / (1000*60*60));
-  const cycle       = Math.floor(hourCount / totalImages);
-  const seed        = 'countdown-retirement-' + cycle;
-  const rng         = mulberry32(xfnv1a(seed));
-  const images      = Array.from({length: totalImages}, (_, i) =>
-    String(i+1).padStart(2,'0') + '.png'
-  );
-  for (let i=images.length-1; i>0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [images[i], images[j]] = [images[j], images[i]];
-  }
-  function setImage() {
-    const idx  = hourCount % totalImages;
-    const file = images[idx];
-    document.getElementById('background')
-            .style.backgroundImage = `url('images/${file}')`;
-    const next = images[(idx+1) % totalImages];
-    new Image().src = `images/${next}`;
-  }
-  setImage();
-  setInterval(setImage, 1000*60*60);
+    updateCountdown();
+    setInterval(updateCountdown, 250);
 
-  // Progress ring + Next-image countdown + reload
-  const circle = document.querySelector('.progress-ring__circle');
-  const r      = circle.r.baseVal.value;
-  const c      = 2 * Math.PI * r;
-  circle.style.strokeDasharray = `${c} ${c}`;
-  function setProgress(frac) {
-    circle.style.strokeDashoffset = c * (1 - frac);
-  }
-  function updateImageCountdown() {
-    const now  = new Date();
-    const next = new Date(now);
-    next.setMinutes(60, 0, 0);
-    const diff = next - now;
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-    document.getElementById('imageCountdown')
-      .innerText = `Next image in ${String(m).padStart(2,'0')}:` +
-                   `${String(s).padStart(2,'0')}`;
-    // Show remaining fraction of the ring:
-    setProgress(diff / 3600000);
-    if (diff <= 0) location.reload();
-  }
-  updateImageCountdown();
-  setInterval(updateImageCountdown, 1000);
+    // -- Seeded shuffle + preload
+    function xfnv1a(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+    function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^(a>>>15),1|a);t=t+Math.imul(t^(t>>>7),61|t)^t;return((t^(t>>>14))>>>0)/4294967296;}}
 
-  // “Time’s Up” modal
-  const modal = document.getElementById('timeUpModal');
-  function showTimeUpModal() {
-    modal.style.display = 'flex';
-  }
-  document.getElementById('closeModal')
-          .addEventListener('click', () => modal.style.display = 'none');
-</script>
+    const totalImages = 100;
+    const hourCount   = Math.floor(Date.now()/(1000*60*60));
+    const cycle       = Math.floor(hourCount/totalImages);
+    const seed        = 'countdown-retirement-'+cycle;
+    const rng         = mulberry32(xfnv1a(seed));
+    const images      = Array.from({length:totalImages},(_,i)=>String(i+1).padStart(2,'0')+'.png');
+    for(let i=images.length-1;i>0;i--){
+      const j = Math.floor(rng()*(i+1));
+      [images[i],images[j]] = [images[j],images[i]];
+    }
+    function setImage(){
+      const idx = hourCount % totalImages;
+      const file= images[idx];
+      document.getElementById('background').style.backgroundImage = `url('images/${file}')`;
+      // preload next
+      new Image().src = `images/${images[(idx+1)%totalImages]}`;
+    }
+    setImage();
+    setInterval(setImage, 1000*60*60);
 
+    // -- Progress ring + Next-image countdown + reload
+    const circle      = document.querySelector('.progress-ring__circle');
+    const radius      = circle.r.baseVal.value;
+    const circumference = 2*Math.PI*radius;
+
+    function setProgress(frac){
+      const dash   = frac * circumference;
+      const offset = circumference - dash;
+      circle.style.strokeDasharray  = `${dash} ${circumference}`;
+      circle.style.strokeDashoffset = offset;
+    }
+
+    function updateImageCountdown(){
+      const now  = new Date();
+      const next = new Date(now); next.setMinutes(60,0,0);
+      const diff = next - now;
+      const m    = Math.floor((diff%3600000)/60000);
+      const s    = Math.floor((diff%60000)/1000);
+      document.getElementById('imageCountdown').innerText =
+        `Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      setProgress(diff/3600000);
+      if(diff<=0) location.reload();
+    }
+    updateImageCountdown();
+    setInterval(updateImageCountdown, 1000);
+
+    // -- “Time’s Up” modal
+    const modal = document.getElementById('timeUpModal');
+    function showTimeUpModal(){ modal.style.display='flex'; }
+    document.getElementById('closeModal')
+            .addEventListener('click', ()=>modal.style.display='none');
+  </script>
 </body>
 </html>
