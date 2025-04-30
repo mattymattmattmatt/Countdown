@@ -15,7 +15,7 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body { width:100%; height:100%; overflow:hidden; }
 
-    /* Background + Ken Burns */
+    /* Background with Ken Burns */
     .background {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background-size: contain;
@@ -60,7 +60,7 @@
       margin-top:0.5rem;
     }
 
-    /* Fun Fact (subtle) */
+    /* Fun Fact section */
     .fun-fact-container {
       text-align:center;
       margin-top:0.75rem;
@@ -83,17 +83,17 @@
       opacity:0.85;
     }
 
-    /* Pie‐wedge timer */
+    /* Pie-wedge & label half-size */
     .image-countdown-wrapper {
-      position:absolute; bottom:12px; right:12px;
-      display:flex; align-items:center; gap:6px;
+      position:absolute; bottom:10px; right:10px;
+      display:flex; align-items:center; gap:4px;
       font-family: var(--font-family);
     }
     .pie-timer {
-      width:36px; height:36px;
+      width:18px;
+      height:18px;
       border-radius:50%;
       background: conic-gradient(var(--accent-color) 360deg, transparent 0deg);
-      /* we'll override the 360deg in JS */
     }
     .image-countdown {
       font-size:0.65rem;
@@ -101,7 +101,7 @@
       text-shadow:0 0 4px rgba(0,0,0,0.3);
     }
 
-    /* Modal */
+    /* Time’s Up modal */
     .modal {
       position:fixed; top:0; left:0; width:100%; height:100%;
       background: rgba(0,0,0,0.8);
@@ -159,7 +159,7 @@
     </div>
   </div>
 
-  <!-- Pie‐wedge + label -->
+  <!-- Pie‐wedge timer + label -->
   <div class="image-countdown-wrapper">
     <div class="pie-timer" id="pieTimer"></div>
     <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
@@ -175,7 +175,7 @@
   </div>
 
   <script>
-    // — Countdown
+    // Countdown
     const countdownDate = new Date("2025-08-15T17:30:00").getTime();
     function animateValue(id,val){
       const el=document.getElementById(id);
@@ -198,7 +198,7 @@
     updateCountdown();
     setInterval(updateCountdown,250);
 
-    // — Image shuffle + display
+    // Image shuffle + display
     function xfnv1a(s){
       let h=2166136261;
       for(let i=0;i<s.length;i++){
@@ -215,86 +215,65 @@
         return ((t ^ (t>>>14))>>>0)/4294967296;
       };
     }
-
     const totalImages = 100;
     function setImage(){
-      // recalc each time
       const hourCount = Math.floor(Date.now()/(1000*60*60));
       const cycle     = Math.floor(hourCount/totalImages);
       const seed      = 'countdown-retirement-'+cycle;
       const rng       = mulberry32(xfnv1a(seed));
-
-      // build & shuffle
-      const imgs = Array.from({length:totalImages},(_,i)=>String(i+1).padStart(2,'0')+'.png');
+      const imgs      = Array.from({length:totalImages},(_,i)=>String(i+1).padStart(2,'0')+'.png');
       for(let i=imgs.length-1;i>0;i--){
-        const j = Math.floor(rng()*(i+1));
-        [imgs[i],imgs[j]] = [imgs[j],imgs[i]];
+        const j=Math.floor(rng()*(i+1));
+        [imgs[i],imgs[j]]=[imgs[j],imgs[i]];
       }
-
       const idx = hourCount % totalImages;
-      document.getElementById('background')
-              .style.backgroundImage = `url('images/${imgs[idx]}')`;
-      // preload next
+      document.getElementById('background').style.backgroundImage = `url('images/${imgs[idx]}')`;
       new Image().src = `images/${imgs[(idx+1)%totalImages]}`;
     }
     setImage();
-    // also swap exactly on the hour
-    setInterval(setImage, 1000*60*60);
+    setInterval(setImage,1000*60*60);
 
-    // — Pie‐wedge timer + label
+    // Pie-wedge timer + label
     const pie = document.getElementById('pieTimer');
     const countdownLabel = document.getElementById('imageCountdown');
     function updateImageCountdown(){
-      const now = new Date(),
-            next = new Date(now);
+      const now = new Date(), next = new Date(now);
       next.setMinutes(60,0,0);
       const diff = next - now;
       const m    = Math.floor((diff%3600000)/60000),
             s    = Math.floor((diff%60000)/1000),
             frac = diff/3600000;
-
-      countdownLabel.innerText =
-        `Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-
-      // set pie wedge
+      countdownLabel.innerText = `Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
       const deg = Math.max(0, frac*360);
-      pie.style.background = 
-        `conic-gradient(var(--accent-color) ${deg}deg, transparent ${deg}deg)`;
-
-      // at zero, fire image swap immediately
-      if(diff <= 0){
-        setImage();
-      }
+      pie.style.background = `conic-gradient(var(--accent-color) ${deg}deg, transparent ${deg}deg)`;
+      if(diff<=0) setImage();
     }
     updateImageCountdown();
-    setInterval(updateImageCountdown, 250);
+    setInterval(updateImageCountdown,250);
 
-    // — Fun Fact loader
-    let facts = [];
+    // Fun Fact loader
+    let facts=[];
     fetch('facts.json')
-      .then(r => { if(!r.ok) throw Error(r.status); return r.json(); })
-      .then(data => {
-        facts = data;
-        showFunFact();
-        setInterval(showFunFact, 1000*60*60);
+      .then(r=>{ if(!r.ok) throw Error(r.status); return r.json(); })
+      .then(data=>{
+        facts=data; showFunFact(); setInterval(showFunFact,1000*60*60);
       })
-      .catch(e => {
+      .catch(e=>{
         console.error(e);
-        document.getElementById('funFact').innerText = 'Error loading fun facts.';
+        document.getElementById('funFact').innerText='Error loading fun facts.';
       });
     function showFunFact(){
       if(!facts.length) return;
-      const hc = Math.floor(Date.now()/(1000*60*60));
-      const idx= xfnv1a('fact-'+hc) % facts.length;
-      document.getElementById('funFact').innerText = facts[idx];
+      const hc=Math.floor(Date.now()/(1000*60*60));
+      const idx=xfnv1a('fact-'+hc)%facts.length;
+      document.getElementById('funFact').innerText=facts[idx];
     }
 
-    // — Time’s Up modal
-    function showTimeUpModal(){
-      document.getElementById('timeUpModal').style.display='flex';
-    }
-    document.getElementById('closeModal')
-      .addEventListener('click', ()=>document.getElementById('timeUpModal').style.display='none');
+    // Time’s Up modal
+    function showTimeUpModal(){ document.getElementById('timeUpModal').style.display='flex'; }
+    document.getElementById('closeModal').addEventListener('click',
+      ()=>document.getElementById('timeUpModal').style.display='none'
+    );
   </script>
 </body>
 </html>
