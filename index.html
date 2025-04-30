@@ -15,6 +15,7 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body { width:100%; height:100%; overflow:hidden; }
 
+    /* Background + Ken Burns */
     .background {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background-size: contain;
@@ -28,6 +29,7 @@
       to   { transform: scale(1.05) translate(-2%, -2%); }
     }
 
+    /* Centered overlay */
     .overlay {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background: var(--overlay-bg);
@@ -35,10 +37,11 @@
       flex-direction: column;
     }
 
+    /* Countdown timer */
     .timer {
       font-family: var(--font-family);
       color: var(--text-color);
-      text-align:center;
+      text-align: center;
       text-shadow: 0 4px 8px rgba(0,0,0,0.7);
     }
     .time-unit { display:inline-block; margin:0 1rem; }
@@ -57,61 +60,55 @@
       margin-top:0.5rem;
     }
 
-    /* —— Fun Fact: smaller & more subtle —— */
+    /* Fun Fact (subtle) */
     .fun-fact-container {
-      text-align: center;
-      margin-top: 0.75rem;
-      max-width: 70%;
+      text-align:center;
+      margin-top:0.75rem;
+      max-width:70%;
     }
     .fun-title {
       font-family: var(--font-family);
       color: var(--text-color);
-      font-weight: 600;
-      font-size: 0.85rem;
-      opacity: 0.8;
-      margin-bottom: 0.2rem;
+      font-weight:600;
+      font-size:0.85rem;
+      opacity:0.8;
+      margin-bottom:0.2rem;
     }
     .fun-fact {
       font-family: var(--font-family);
-      font-style: italic;
-      font-size: 0.75rem;
+      font-style:italic;
+      font-size:0.75rem;
       color: var(--text-color);
-      text-shadow: 0 0 3px rgba(0,0,0,0.4);
-      opacity: 0.85;
+      text-shadow:0 0 3px rgba(0,0,0,0.4);
+      opacity:0.85;
     }
 
-    /* —— Image countdown & ring: smaller & subtler —— */
+    /* Pie‐wedge timer */
     .image-countdown-wrapper {
       position:absolute; bottom:12px; right:12px;
       display:flex; align-items:center; gap:6px;
       font-family: var(--font-family);
     }
+    .pie-timer {
+      width:36px; height:36px;
+      border-radius:50%;
+      background: conic-gradient(var(--accent-color) 360deg, transparent 0deg);
+      /* we'll override the 360deg in JS */
+    }
     .image-countdown {
-      font-size: 0.65rem;
+      font-size:0.65rem;
       color: rgba(255,255,255,0.8);
-      text-shadow: 0 0 4px rgba(0,0,0,0.3);
-    }
-    .progress-ring {
-      width: 36px;
-      height: 36px;
-      transform: rotate(-90deg);
-      transform-origin: center;
-    }
-    .progress-ring__circle {
-      stroke: var(--accent-color);
-      stroke-width: 3;
-      fill: transparent;
+      text-shadow:0 0 4px rgba(0,0,0,0.3);
     }
 
+    /* Modal */
     .modal {
       position:fixed; top:0; left:0; width:100%; height:100%;
       background: rgba(0,0,0,0.8);
-      display:none;
-      align-items:center; justify-content:center;
+      display:none; align-items:center; justify-content:center;
       font-family: var(--font-family);
       color: var(--text-color);
-      text-align:center;
-      padding:20px;
+      text-align:center; padding:20px;
     }
     .modal .content {
       background:#fff; color:#000;
@@ -123,8 +120,7 @@
       margin-top:1em; padding:0.5em 1em;
       font-family: var(--font-family);
       background: var(--accent-color);
-      border:none; border-radius:4px;
-      cursor:pointer;
+      border:none; border-radius:4px; cursor:pointer;
     }
 
     @media(max-width:768px) {
@@ -138,6 +134,7 @@
   <div class="background" id="background"></div>
 
   <div class="overlay">
+    <!-- Countdown -->
     <div class="timer" role="timer" aria-live="polite">
       <time datetime="2025-08-15T17:30:00Z">
         <div class="time-unit">
@@ -155,19 +152,20 @@
       </time>
     </div>
 
+    <!-- Fun Fact -->
     <div class="fun-fact-container">
       <div class="fun-title">Fun Fact:</div>
       <div class="fun-fact" id="funFact">Loading fun fact…</div>
     </div>
   </div>
 
+  <!-- Pie‐wedge + label -->
   <div class="image-countdown-wrapper">
-    <svg class="progress-ring" viewBox="0 0 60 60">
-      <circle class="progress-ring__circle" r="28" cx="30" cy="30"/>
-    </svg>
+    <div class="pie-timer" id="pieTimer"></div>
     <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
   </div>
 
+  <!-- Time’s Up modal -->
   <div class="modal" id="timeUpModal">
     <div class="content">
       <h1>🎉 Congratulations!</h1>
@@ -177,97 +175,126 @@
   </div>
 
   <script>
-    // ——— Countdown ———
+    // — Countdown
     const countdownDate = new Date("2025-08-15T17:30:00").getTime();
     function animateValue(id,val){
-      const el = document.getElementById(id);
-      if(el.innerText !== val){
-        el.innerText = val;
+      const el=document.getElementById(id);
+      if(el.innerText!==val){
+        el.innerText=val;
         el.classList.add('animate');
         setTimeout(()=>el.classList.remove('animate'),300);
       }
     }
     function updateCountdown(){
-      const now = Date.now(), diff = countdownDate - now;
-      if(diff <= 0) return showTimeUpModal();
-      const months = Math.floor(diff/(1000*60*60*24*30));
-      const days   = Math.floor((diff%(1000*60*60*24*30))/(1000*60*60*24));
-      const hours  = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-      animateValue('months', String(months).padStart(2,'0'));
-      animateValue('days',   String(days  ).padStart(2,'0'));
-      animateValue('hours',  String(hours ).padStart(2,'0'));
+      const now=Date.now(), diff=countdownDate-now;
+      if(diff<=0) return showTimeUpModal();
+      const months=Math.floor(diff/(1000*60*60*24*30));
+      const days  =Math.floor((diff%(1000*60*60*24*30))/(1000*60*60*24));
+      const hours =Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+      animateValue('months',String(months).padStart(2,'0'));
+      animateValue('days',  String(days  ).padStart(2,'0'));
+      animateValue('hours', String(hours ).padStart(2,'0'));
     }
     updateCountdown();
     setInterval(updateCountdown,250);
 
-    // ——— Image shuffle & preload ———
-    function xfnv1a(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
-    function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^(a>>>15),1|a);t=t+Math.imul(t^(t>>>7),61|t)^t;return((t^(t>>>14))>>>0)/4294967296;}}
+    // — Image shuffle + display
+    function xfnv1a(s){
+      let h=2166136261;
+      for(let i=0;i<s.length;i++){
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h,16777619);
+      }
+      return h>>>0;
+    }
+    function mulberry32(a){
+      return function(){
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        let t = Math.imul(a ^ (a>>>15),1|a);
+        t = t + Math.imul(t ^ (t>>>7),61|t) ^ t;
+        return ((t ^ (t>>>14))>>>0)/4294967296;
+      };
+    }
 
     const totalImages = 100;
-    const hourCount   = Math.floor(Date.now()/(1000*60*60));
-    const cycle       = Math.floor(hourCount/totalImages);
-    const seed        = 'countdown-retirement-' + cycle;
-    const rng         = mulberry32(xfnv1a(seed));
-    const images      = Array.from({length:totalImages},(_,i)=>String(i+1).padStart(2,'0')+'.png');
-    for(let i=images.length-1; i>0; i--){
-      const j = Math.floor(rng()*(i+1));
-      [images[i],images[j]] = [images[j],images[i]];
-    }
     function setImage(){
+      // recalc each time
+      const hourCount = Math.floor(Date.now()/(1000*60*60));
+      const cycle     = Math.floor(hourCount/totalImages);
+      const seed      = 'countdown-retirement-'+cycle;
+      const rng       = mulberry32(xfnv1a(seed));
+
+      // build & shuffle
+      const imgs = Array.from({length:totalImages},(_,i)=>String(i+1).padStart(2,'0')+'.png');
+      for(let i=imgs.length-1;i>0;i--){
+        const j = Math.floor(rng()*(i+1));
+        [imgs[i],imgs[j]] = [imgs[j],imgs[i]];
+      }
+
       const idx = hourCount % totalImages;
       document.getElementById('background')
-              .style.backgroundImage = `url('images/${images[idx]}')`;
-      new Image().src = `images/${images[(idx+1)%totalImages]}`;
+              .style.backgroundImage = `url('images/${imgs[idx]}')`;
+      // preload next
+      new Image().src = `images/${imgs[(idx+1)%totalImages]}`;
     }
     setImage();
+    // also swap exactly on the hour
     setInterval(setImage, 1000*60*60);
 
-    // ——— Progress ring + Next-image countdown ———
-    const circle        = document.querySelector('.progress-ring__circle');
-    const radius        = circle.r.baseVal.value;
-    const circumference = 2 * Math.PI * radius;
-    function setProgress(frac){
-      const dash = frac * circumference;
-      circle.style.strokeDasharray = `${dash} ${circumference}`;
-    }
+    // — Pie‐wedge timer + label
+    const pie = document.getElementById('pieTimer');
+    const countdownLabel = document.getElementById('imageCountdown');
     function updateImageCountdown(){
-      const now = new Date(), next = new Date(now); next.setMinutes(60,0,0);
+      const now = new Date(),
+            next = new Date(now);
+      next.setMinutes(60,0,0);
       const diff = next - now;
-      const m = Math.floor((diff % 3600000) / 60000),
-            s = Math.floor((diff % 60000)   / 1000);
-      document.getElementById('imageCountdown').innerText =
+      const m    = Math.floor((diff%3600000)/60000),
+            s    = Math.floor((diff%60000)/1000),
+            frac = diff/3600000;
+
+      countdownLabel.innerText =
         `Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-      setProgress(diff / 3600000);
-      if(diff <= 0) location.reload();
+
+      // set pie wedge
+      const deg = Math.max(0, frac*360);
+      pie.style.background = 
+        `conic-gradient(var(--accent-color) ${deg}deg, transparent ${deg}deg)`;
+
+      // at zero, fire image swap immediately
+      if(diff <= 0){
+        setImage();
+      }
     }
     updateImageCountdown();
-    setInterval(updateImageCountdown, 1000);
+    setInterval(updateImageCountdown, 250);
 
-    // ——— Fun Fact loader ———
+    // — Fun Fact loader
     let facts = [];
     fetch('facts.json')
-      .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(r => { if(!r.ok) throw Error(r.status); return r.json(); })
       .then(data => {
         facts = data;
         showFunFact();
         setInterval(showFunFact, 1000*60*60);
       })
-      .catch(err => {
-        console.error('Failed to load facts.json', err);
+      .catch(e => {
+        console.error(e);
         document.getElementById('funFact').innerText = 'Error loading fun facts.';
       });
     function showFunFact(){
       if(!facts.length) return;
       const hc = Math.floor(Date.now()/(1000*60*60));
-      const idx = xfnv1a('fact-'+hc) % facts.length;
+      const idx= xfnv1a('fact-'+hc) % facts.length;
       document.getElementById('funFact').innerText = facts[idx];
     }
 
-    // ——— Time’s Up modal ———
-    function showTimeUpModal(){ document.getElementById('timeUpModal').style.display='flex'; }
+    // — Time’s Up modal
+    function showTimeUpModal(){
+      document.getElementById('timeUpModal').style.display='flex';
+    }
     document.getElementById('closeModal')
-            .addEventListener('click', ()=>document.getElementById('timeUpModal').style.display='none');
+      .addEventListener('click', ()=>document.getElementById('timeUpModal').style.display='none');
   </script>
 </body>
 </html>
