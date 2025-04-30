@@ -61,10 +61,10 @@
       margin-top:0.2rem;
     }
 
-    /* Fun Fact (75% opacity) */
+    /* Fun Fact (75% opacity), with half gap */
     .fun-fact-container {
       text-align:center;
-      margin-top:0.75rem;
+      margin-top:0.4rem;    /* <-- was 0.75rem */
       max-width:70%;
     }
     .fun-title {
@@ -100,6 +100,7 @@
       font-size:0.65rem;
       color: rgba(255,255,255,0.8);
       text-shadow:0 0 4px rgba(0,0,0,0.3);
+      cursor: default;
     }
 
     /* Modal */
@@ -179,9 +180,9 @@
     // Countdown
     const countdownDate = new Date("2025-08-15T17:30:00").getTime();
     function animateValue(id,val){
-      const el = document.getElementById(id);
-      if(el.innerText !== val){
-        el.innerText = val;
+      const el=document.getElementById(id);
+      if(el.innerText!==val){
+        el.innerText=val;
         el.classList.add('animate');
         setTimeout(()=>el.classList.remove('animate'),300);
       }
@@ -217,7 +218,7 @@
       };
     }
     const totalImages = 100;
-    function setImage(){
+    function getShuffledImages(){
       const hourCount = Math.floor(Date.now()/(1000*60*60));
       const cycle     = Math.floor(hourCount/totalImages);
       const seed      = 'countdown-retirement-'+cycle;
@@ -227,40 +228,69 @@
         const j=Math.floor(rng()*(i+1));
         [imgs[i],imgs[j]]=[imgs[j],imgs[i]];
       }
+      return imgs;
+    }
+    function setImage(){
+      const imgs = getShuffledImages();
+      const hourCount = Math.floor(Date.now()/(1000*60*60));
       const idx = hourCount % totalImages;
-      document.getElementById('background').style.backgroundImage =
-        `url('images/${imgs[idx]}')`;
+      document.getElementById('background')
+              .style.backgroundImage = `url('images/${imgs[idx]}')`;
     }
     setImage();
 
-    // Schedule a reload at the top of the hour
-    function scheduleReload(){
+    // Schedule reload at exact top of hour
+    (function scheduleReload(){
       const now = Date.now();
       const next = new Date(now);
       next.setMinutes(60,0,0,0);
-      const ms = next - now;
-      setTimeout(()=>location.reload(), ms+100); // +100ms buffer
-    }
-    scheduleReload();
+      setTimeout(()=>location.reload(), next - now + 100);
+    })();
 
     // Pie-wedge timer
     const pie = document.getElementById('pieTimer');
     const countdownLabel = document.getElementById('imageCountdown');
     function updateImageCountdown(){
-      const now = new Date(),
-            next = new Date(now);
+      const now = new Date(), next = new Date(now);
       next.setMinutes(60,0,0,0);
       const diff = next - now;
-      const m    = Math.floor((diff % 3600000)/60000),
-            s    = Math.floor((diff % 60000)/1000),
+      const m    = Math.floor((diff%3600000)/60000),
+            s    = Math.floor((diff%60000)/1000),
             frac = diff/3600000;
       countdownLabel.innerText =
         `Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-      pie.style.background = 
+      pie.style.background =
         `conic-gradient(var(--accent-color) ${Math.max(0,frac*360)}deg, transparent 0deg)`;
     }
     updateImageCountdown();
     setInterval(updateImageCountdown,250);
+
+    // Hover‐preview tooltip for next image
+    let tooltipImg = null;
+    countdownLabel.addEventListener('mouseenter', e => {
+      const imgs = getShuffledImages();
+      const hourCount = Math.floor(Date.now()/(1000*60*60));
+      const nextIdx = (hourCount % totalImages + 1) % totalImages;
+      tooltipImg = document.createElement('img');
+      tooltipImg.src = `images/${imgs[nextIdx]}`;
+      tooltipImg.style.position = 'absolute';
+      tooltipImg.style.width = '100px';
+      tooltipImg.style.border = '2px solid var(--accent-color)';
+      tooltipImg.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+      document.body.appendChild(tooltipImg);
+    });
+    countdownLabel.addEventListener('mousemove', e => {
+      if(tooltipImg){
+        tooltipImg.style.left = (e.pageX + 12) + 'px';
+        tooltipImg.style.top  = (e.pageY + 12) + 'px';
+      }
+    });
+    countdownLabel.addEventListener('mouseleave', () => {
+      if(tooltipImg && tooltipImg.parentNode){
+        tooltipImg.parentNode.removeChild(tooltipImg);
+        tooltipImg = null;
+      }
+    });
 
     // Fun facts
     let facts=[];
@@ -277,8 +307,9 @@
 
     // Time’s Up modal
     function showTimeUpModal(){ document.getElementById('timeUpModal').style.display='flex'; }
-    document.getElementById('closeModal')
-            .addEventListener('click',()=>document.getElementById('timeUpModal').style.display='none');
+    document.getElementById('closeModal').addEventListener('click',()=>{
+      document.getElementById('timeUpModal').style.display='none';
+    });
   </script>
 </body>
 </html>
