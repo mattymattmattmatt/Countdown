@@ -15,7 +15,6 @@
     * { margin:0; padding:0; box-sizing:border-box }
     html, body { width:100%; height:100%; overflow:hidden }
 
-    /* Background Ken Burns */
     .background {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background-size: contain;
@@ -29,7 +28,6 @@
       to   { transform: scale(1.05) translate(-2%,-2%) }
     }
 
-    /* Overlay */
     .overlay {
       position:absolute; top:0; left:0; width:100%; height:100%;
       background: var(--overlay-bg);
@@ -37,7 +35,6 @@
       flex-direction: column;
     }
 
-    /* Countdown (numbers 60% opacity, labels close) */
     .timer {
       font-family: var(--font-family);
       color: var(--text-color);
@@ -61,10 +58,9 @@
       margin-top:0.2rem;
     }
 
-    /* Fun Fact (75% opacity), with half gap */
     .fun-fact-container {
       text-align:center;
-      margin-top:0.4rem;    /* <-- was 0.75rem */
+      margin-top:0.4rem;
       max-width:70%;
     }
     .fun-title {
@@ -84,7 +80,6 @@
       opacity:0.75;
     }
 
-    /* Pie-wedge & label */
     .image-countdown-wrapper {
       position:absolute; bottom:10px; right:10px;
       display:flex; align-items:center; gap:4px;
@@ -103,7 +98,6 @@
       cursor: default;
     }
 
-    /* Modal */
     .modal {
       position:fixed; top:0; left:0; width:100%; height:100%;
       background: rgba(0,0,0,0.8);
@@ -136,7 +130,6 @@
   <div class="background" id="background"></div>
 
   <div class="overlay">
-    <!-- Countdown -->
     <div class="timer" role="timer" aria-live="polite">
       <time datetime="2025-08-15T17:30:00Z">
         <div class="time-unit">
@@ -154,20 +147,17 @@
       </time>
     </div>
 
-    <!-- Fun Fact -->
     <div class="fun-fact-container">
       <div class="fun-title">Fun Fact:</div>
       <div class="fun-fact" id="funFact">Loading fun fact…</div>
     </div>
   </div>
 
-  <!-- Pie-wedge timer + label -->
   <div class="image-countdown-wrapper">
     <div class="pie-timer" id="pieTimer"></div>
     <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
   </div>
 
-  <!-- Time’s Up modal -->
   <div class="modal" id="timeUpModal">
     <div class="content">
       <h1>🎉 Congratulations!</h1>
@@ -180,9 +170,9 @@
     // Countdown
     const countdownDate = new Date("2025-08-15T17:30:00").getTime();
     function animateValue(id,val){
-      const el=document.getElementById(id);
-      if(el.innerText!==val){
-        el.innerText=val;
+      const el = document.getElementById(id);
+      if(el.innerText !== val){
+        el.innerText = val;
         el.classList.add('animate');
         setTimeout(()=>el.classList.remove('animate'),300);
       }
@@ -190,9 +180,9 @@
     function updateCountdown(){
       const now=Date.now(), diff=countdownDate-now;
       if(diff<=0) return showTimeUpModal();
-      const months=Math.floor(diff/(1000*60*60*24*30));
-      const days  =Math.floor((diff%(1000*60*60*24*30))/(1000*60*60*24));
-      const hours =Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+      const months = Math.floor(diff/(1000*60*60*24*30));
+      const days   = Math.floor((diff%(1000*60*60*24*30))/(1000*60*60*24));
+      const hours  = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
       animateValue('months',String(months).padStart(2,'0'));
       animateValue('days',  String(days  ).padStart(2,'0'));
       animateValue('hours', String(hours ).padStart(2,'0'));
@@ -200,7 +190,7 @@
     updateCountdown();
     setInterval(updateCountdown,250);
 
-    // Seeded shuffle & setImage
+    // Seeded shuffle helper
     function xfnv1a(s){
       let h=2166136261;
       for(let i=0;i<s.length;i++){
@@ -226,20 +216,20 @@
       const imgs      = Array.from({length:totalImages},(_,i)=>String(i+1).padStart(2,'0')+'.png');
       for(let i=imgs.length-1;i>0;i--){
         const j=Math.floor(rng()*(i+1));
-        [imgs[i],imgs[j]]=[imgs[j],imgs[i]];
+        [imgs[i],imgs[j]] = [imgs[j],imgs[i]];
       }
       return imgs;
     }
+
+    // setImage + schedule reload
     function setImage(){
       const imgs = getShuffledImages();
       const hourCount = Math.floor(Date.now()/(1000*60*60));
       const idx = hourCount % totalImages;
-      document.getElementById('background')
-              .style.backgroundImage = `url('images/${imgs[idx]}')`;
+      document.getElementById('background').style.backgroundImage =
+        `url('images/${imgs[idx]}')`;
     }
     setImage();
-
-    // Schedule reload at exact top of hour
     (function scheduleReload(){
       const now = Date.now();
       const next = new Date(now);
@@ -247,11 +237,13 @@
       setTimeout(()=>location.reload(), next - now + 100);
     })();
 
-    // Pie-wedge timer
+    // Pie-wedge timer + hover preview
     const pie = document.getElementById('pieTimer');
     const countdownLabel = document.getElementById('imageCountdown');
+    let tooltipImg = null;
+
     function updateImageCountdown(){
-      const now = new Date(), next = new Date(now);
+      const now=new Date(), next=new Date(now);
       next.setMinutes(60,0,0,0);
       const diff = next - now;
       const m    = Math.floor((diff%3600000)/60000),
@@ -265,8 +257,6 @@
     updateImageCountdown();
     setInterval(updateImageCountdown,250);
 
-    // Hover‐preview tooltip for next image
-    let tooltipImg = null;
     countdownLabel.addEventListener('mouseenter', e => {
       const imgs = getShuffledImages();
       const hourCount = Math.floor(Date.now()/(1000*60*60));
@@ -280,14 +270,15 @@
       document.body.appendChild(tooltipImg);
     });
     countdownLabel.addEventListener('mousemove', e => {
-      if(tooltipImg){
-        tooltipImg.style.left = (e.pageX + 12) + 'px';
-        tooltipImg.style.top  = (e.pageY + 12) + 'px';
-      }
+      if(!tooltipImg) return;
+      const w = tooltipImg.offsetWidth;
+      const h = tooltipImg.offsetHeight;
+      tooltipImg.style.left = (e.pageX - w) + 'px';
+      tooltipImg.style.top  = (e.pageY - h) + 'px';
     });
     countdownLabel.addEventListener('mouseleave', () => {
-      if(tooltipImg && tooltipImg.parentNode){
-        tooltipImg.parentNode.removeChild(tooltipImg);
+      if(tooltipImg){
+        tooltipImg.remove();
         tooltipImg = null;
       }
     });
@@ -301,15 +292,14 @@
     function showFunFact(){
       if(!facts.length) return;
       const hc=Math.floor(Date.now()/(1000*60*60));
-      const idx=xfnv1a('fact-'+hc)%facts.length;
+      const idx = xfnv1a('fact-'+hc)%facts.length;
       document.getElementById('funFact').innerText=facts[idx];
     }
 
     // Time’s Up modal
     function showTimeUpModal(){ document.getElementById('timeUpModal').style.display='flex'; }
-    document.getElementById('closeModal').addEventListener('click',()=>{
-      document.getElementById('timeUpModal').style.display='none';
-    });
+    document.getElementById('closeModal')
+      .addEventListener('click', ()=>document.getElementById('timeUpModal').style.display='none');
   </script>
 </body>
 </html>
