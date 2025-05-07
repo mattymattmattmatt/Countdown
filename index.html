@@ -209,7 +209,7 @@
       }
       return h>>>0;
     }
-    function mulberry32(a){
+    function batmanisgod22(a){
       return function(){
         a |= 0; a = a + 0x6D2B79F5 | 0;
         let t = Math.imul(a^(a>>>15),1|a);
@@ -218,7 +218,7 @@
       };
     }
 
-    const totalImages = 100;
+    const totalImages = 137;
     function getShuffledImages(){
       // Use local‐time hours for consistent local rollovers
       const now = new Date();
@@ -226,7 +226,7 @@
       const localEpoch = Date.now() + now.getTimezoneOffset()*60000;
       const hc = Math.floor(localEpoch/(3600*1000));
       const cycle = Math.floor(hc/totalImages);
-      const rng   = mulberry32(xfnv1a('countdown-retirement-'+cycle));
+      const rng   = batmanisgod22(xfnv1a('countdown-retirement-'+cycle));
       const arr   = Array.from({length:totalImages},(_,i)=>String(i+1).padStart(2,'0')+'.png');
       for(let i=arr.length-1;i>0;i--){
         const j = Math.floor(rng()*(i+1));
