@@ -12,15 +12,13 @@
       --font-family: 'Poppins', sans-serif;
       --accent-color: #ffd700;
     }
-    * { margin:0; padding:0; box-sizing:border-box }
-    html, body { width:100%; height:100%; overflow:hidden }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; overflow:hidden; position:relative; }
 
     /* Background Ken Burns */
     .background {
       position:absolute; top:0; left:0; width:100%; height:100%;
-      background-size: contain;
-      background-position: center;
-      background-repeat: no-repeat;
+      background-size: contain; background-position: center; background-repeat: no-repeat;
       animation: kenburns 3600s ease-in-out infinite alternate;
       transition: background-image 0.8s ease-in-out;
     }
@@ -37,18 +35,18 @@
       flex-direction: column;
     }
 
-    /* Countdown (days & hours) */
+    /* Countdown */
     .timer {
       font-family: var(--font-family);
       color: var(--text-color);
-      text-align:center;
-      text-shadow:0 4px 8px rgba(0,0,0,0.7);
+      text-align: center;
+      text-shadow: 0 4px 8px rgba(0,0,0,0.7);
     }
-    .time-unit { display:inline-block; margin:0 1rem }
+    .time-unit { display:inline-block; margin:0 1rem; }
     .time-value {
-      font-size: clamp(3rem,8vw,6rem);
-      font-weight:800;
-      opacity:0.6;
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800;
+      opacity: 0.6;
       transition: transform 0.3s, color 0.3s;
     }
     .time-value.animate {
@@ -56,10 +54,12 @@
       color: var(--accent-color);
     }
     .label {
-      font-size: clamp(0.75rem,2vw,1.2rem);
+      font-size: clamp(0.75rem, 2vw, 1.2rem);
       letter-spacing:2px;
       margin-top:0.2rem;
     }
+    /* hide months in simple mode */
+    body.simple .months-unit { display: none; }
 
     /* Fun Fact */
     .fun-fact-container {
@@ -84,7 +84,7 @@
       opacity:0.75;
     }
 
-    /* Pie‐wedge & label */
+    /* Pie-wedge & label */
     .image-countdown-wrapper {
       position:absolute; bottom:10px; right:10px;
       display:flex; align-items:center; gap:4px;
@@ -102,6 +102,23 @@
       text-shadow:0 0 4px rgba(0,0,0,0.3);
       cursor: default;
     }
+
+    /* Toggle button */
+    #toggleView {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      font-family: var(--font-family);
+      font-size: 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0.8;
+    }
+    #toggleView:hover { opacity: 1; }
 
     /* Modal */
     .modal {
@@ -136,9 +153,13 @@
   <div class="background" id="background"></div>
 
   <div class="overlay">
-    <!-- Countdown: only Days & Hours -->
+    <!-- Countdown: Months, Days & Hours -->
     <div class="timer" role="timer" aria-live="polite">
       <time datetime="2025-08-15T17:30:00Z">
+        <div class="time-unit months-unit">
+          <div class="time-value" id="months">00</div>
+          <div class="label">Months</div>
+        </div>
         <div class="time-unit">
           <div class="time-value" id="days">00</div>
           <div class="label">Days</div>
@@ -157,11 +178,14 @@
     </div>
   </div>
 
-  <!-- Pie‐wedge timer + label -->
+  <!-- Pie-wedge timer + label -->
   <div class="image-countdown-wrapper">
     <div class="pie-timer" id="pieTimer"></div>
     <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
   </div>
+
+  <!-- Toggle Full/Simple -->
+  <button id="toggleView">Simple View</button>
 
   <!-- Time’s Up modal -->
   <div class="modal" id="timeUpModal">
@@ -173,140 +197,143 @@
   </div>
 
   <script>
-    // Countdown (Days & Hours)
+    // Countdown (Months/Days/Hours or Days/Hours)
     const countdownDate = new Date("2025-08-15T17:30:00").getTime();
-    function animateValue(id, val) {
+    function animateValue(id,val) {
       const el = document.getElementById(id);
       if (el.innerText !== val) {
         el.innerText = val;
         el.classList.add('animate');
-        setTimeout(() => el.classList.remove('animate'), 300);
+        setTimeout(()=>el.classList.remove('animate'),300);
       }
     }
     function updateCountdown() {
       const now = Date.now(), diff = countdownDate - now;
       if (diff <= 0) return showTimeUpModal();
-      const days  = Math.floor(diff / (1000*60*60*24));
-      const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-      animateValue('days',  String(days ).padStart(2, '0'));
-      animateValue('hours', String(hours).padStart(2, '0'));
+      const months = Math.floor(diff/(1000*60*60*24*30));
+      const days   = Math.floor((diff%(1000*60*60*24*30))/(1000*60*60*24));
+      const hours  = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+      animateValue('months', String(months).padStart(2,'0'));
+      animateValue('days',   String(days  ).padStart(2,'0'));
+      animateValue('hours',  String(hours ).padStart(2,'0'));
     }
     updateCountdown();
-    setInterval(updateCountdown, 250);
+    setInterval(updateCountdown,250);
 
-    // Shuffle helpers
+    // Image-shuffle helpers
     function xfnv1a(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
     function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^(a>>>15),1|a);t=t+Math.imul(t^(t>>>7),61|t)^t;return((t^(t>>>14))>>>0)/4294967296;}}
 
     const totalImages = 137;
-    function getShuffledImages() {
+    function getShuffledImages(){
       const now = new Date();
       const localEpoch = Date.now() + now.getTimezoneOffset()*60000;
-      const hc = Math.floor(localEpoch / 3600000);
-      const cycle = Math.floor(hc / totalImages);
-      const rng = mulberry32(xfnv1a('batmanisgod22-' + cycle));
-      const arr = Array.from({length: totalImages}, (_,i) =>
-        String(i+1).padStart(2,'0') + '.png'
-      );
-      for (let i = arr.length-1; i>0; i--) {
-        const j = Math.floor(rng()*(i+1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+      const hc = Math.floor(localEpoch/3600000);
+      const cycle = Math.floor(hc/totalImages);
+      const rng   = mulberry32(xfnv1a('batmanisgod22-'+cycle));
+      const arr   = Array.from({length:totalImages},(_,i)=>String(i+1).padStart(2,'0')+'.png');
+      for(let i=arr.length-1;i>0;i--){
+        const j=Math.floor(rng()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
       }
       return arr;
     }
 
     // Set initial image
-    function setImage() {
+    function setImage(){
       const imgs = getShuffledImages();
       const now = new Date();
       const localEpoch = Date.now() + now.getTimezoneOffset()*60000;
-      const idx = Math.floor(localEpoch/3600000) % totalImages;
-      document.getElementById('background').style.backgroundImage =
-        `url('images/${imgs[idx]}')`;
+      const idx = Math.floor(localEpoch/3600000)%totalImages;
+      document.getElementById('background')
+              .style.backgroundImage = `url('images/${imgs[idx]}')`;
     }
     setImage();
 
     // Reload at next local hour
     (function(){
-      const now = new Date();
-      const next = new Date(now);
+      const now = new Date(), next = new Date(now);
       next.setHours(now.getHours()+1,0,0,0);
       setTimeout(()=>location.reload(), next - now + 50);
     })();
 
-    // Pie‐wedge timer
+    // Pie-wedge timer
     const pie = document.getElementById('pieTimer'),
           lbl = document.getElementById('imageCountdown');
-    function updateImageCountdown() {
-      const now = new Date(), next = new Date(now);
+    function updateImageCountdown(){
+      const now=new Date(), next=new Date(now);
       next.setHours(now.getHours()+1,0,0,0);
-      const diff = next - now;
-      const m    = Math.floor((diff % 3600000)/60000),
-            s    = Math.floor((diff % 60000)/1000),
+      const diff = next-now;
+      const m    = Math.floor((diff%3600000)/60000),
+            s    = Math.floor((diff%60000)/1000),
             frac = diff/3600000;
-      lbl.innerText =
-        `Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-      pie.style.background =
-        `conic-gradient(var(--accent-color) ${Math.max(0,frac*360)}deg, transparent 0deg)`;
+      lbl.innerText = `Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      pie.style.background = `conic-gradient(var(--accent-color) ${Math.max(0,frac*360)}deg,transparent 0deg)`;
     }
     updateImageCountdown();
-    setInterval(updateImageCountdown, 250);
+    setInterval(updateImageCountdown,250);
 
-    // Hover‐preview thumbnail
-    let tip = null;
-    lbl.addEventListener('mouseenter', () => {
-      const imgs = getShuffledImages();
-      const now = new Date();
-      const localEpoch = Date.now() + now.getTimezoneOffset()*60000;
-      const nextIdx = (Math.floor(localEpoch/3600000)+1) % totalImages;
-      tip = document.createElement('img');
-      tip.src = `images/${imgs[nextIdx]}`;
-      Object.assign(tip.style, {
-        position: 'absolute',
-        width: '100px',
-        border: '2px solid var(--accent-color)',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
-      });
-      document.body.appendChild(tip);
-    });
-    lbl.addEventListener('mousemove', e => {
-      if (!tip) return;
-      const w = tip.offsetWidth, h = tip.offsetHeight;
-      tip.style.left = `${e.pageX - w}px`;
-      tip.style.top  = `${e.pageY - h}px`;
-    });
-    lbl.addEventListener('mouseleave', () => {
-      if (tip) { tip.remove(); tip = null; }
-    });
-
-    // Fun fact every 10 minutes
-    let facts = [];
+    // Fun-fact every 10 min
+    let facts=[];
     fetch('facts.json')
-      .then(r => { if (!r.ok) throw Error(r.status); return r.json(); })
-      .then(data => {
-        facts = data;
-        showFunFact();
-        setInterval(showFunFact, 1000*60*10);
+      .then(r=>{ if(!r.ok) throw Error(r.status); return r.json(); })
+      .then(data=>{
+        facts=data; showFunFact();
+        setInterval(showFunFact,1000*60*10);
       })
-      .catch(err => {
+      .catch(err=>{
         console.error(err);
-        document.getElementById('funFact').innerText = 'Error loading fun facts.';
+        document.getElementById('funFact').innerText='Error loading fun facts.';
       });
     function showFunFact(){
-      if (!facts.length) return;
-      const now = new Date();
-      const localEpoch = Date.now() + now.getTimezoneOffset()*60000;
-      const hc = Math.floor(localEpoch/3600000);
-      const idx = xfnv1a('fact-'+hc) % facts.length;
+      if(!facts.length) return;
+      const now=new Date();
+      const localEpoch = Date.now()+now.getTimezoneOffset()*60000;
+      const hc=Math.floor(localEpoch/3600000);
+      const idx=xfnv1a('fact-'+hc)%facts.length;
       document.getElementById('funFact').innerText = facts[idx];
     }
 
+    // Hover-preview thumbnail
+    let tip=null;
+    lbl.addEventListener('mouseenter',()=>{
+      const imgs=getShuffledImages();
+      const now=new Date();
+      const localEpoch=Date.now()+now.getTimezoneOffset()*60000;
+      const nextIdx=(Math.floor(localEpoch/3600000)+1)%totalImages;
+      tip=document.createElement('img');
+      tip.src=`images/${imgs[nextIdx]}`;
+      Object.assign(tip.style,{
+        position:'absolute',
+        width:'100px',
+        border:`2px solid var(--accent-color)`,
+        boxShadow:`0 2px 6px rgba(0,0,0,0.3)`
+      });
+      document.body.appendChild(tip);
+    });
+    lbl.addEventListener('mousemove',e=>{
+      if(!tip) return;
+      const w=tip.offsetWidth, h=tip.offsetHeight;
+      tip.style.left=`${e.pageX - w}px`;
+      tip.style.top =`${e.pageY - h}px`;
+    });
+    lbl.addEventListener('mouseleave',()=>{
+      if(tip){ tip.remove(); tip=null; }
+    });
+
+    // Toggle Full/Simple view
+    const btn = document.getElementById('toggleView');
+    btn.addEventListener('click', ()=>{
+      document.body.classList.toggle('simple');
+      btn.textContent = document.body.classList.contains('simple') ? 'Full View' : 'Simple View';
+    });
+
     // Time’s Up modal
     function showTimeUpModal(){
-      document.getElementById('timeUpModal').style.display = 'flex';
+      document.getElementById('timeUpModal').style.display='flex';
     }
-    document.getElementById('closeModal').addEventListener('click', () => {
-      document.getElementById('timeUpModal').style.display = 'none';
+    document.getElementById('closeModal').addEventListener('click',()=>{
+      document.getElementById('timeUpModal').style.display='none';
     });
   </script>
 </body>
