@@ -111,15 +111,28 @@ function ring(){const n=new Date(),nx=new Date(n);nx.setHours(n.getHours()+1,0,0
 ring();setInterval(ring,250);
 
 /* ----- Fun facts / Jokes every 10 min ----- */
-let facts=[],jokes=[];
-function initText(){if(facts.length&&jokes.length){updateText();setInterval(updateText,600000);}}
+let facts=[],jokes=[],textReady=false;
+function initText(){
+  if(!textReady && (facts.length||jokes.length)){
+    updateText();
+    setInterval(updateText,600000);
+    textReady=true;
+  }
+}
 fetch('facts.json').then(r=>r.ok?r.json():[]).then(j=>{facts=j;initText();});
 fetch('jokes.json').then(r=>r.ok?r.json():[]).then(j=>{jokes=j;initText();});
-function updateText(){const cycle=Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/600000);
+function updateText(){
+  const cycle=Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/600000);
   const title=document.getElementById('funTitle');
   const box=document.getElementById('funFact');
-  if(cycle%2===0){title.textContent='Fun Fact:';box.textContent=facts[xfnv1a('f'+cycle)%facts.length];}
-  else{title.textContent='Joke:';box.textContent=jokes[xfnv1a('j'+cycle)%jokes.length];}}
+  if(!jokes.length || (facts.length && cycle%2===0)){
+    title.textContent='Fun Fact:';
+    box.textContent=facts.length?facts[xfnv1a('f'+cycle)%facts.length]:'...';
+  }else{
+    title.textContent='Joke:';
+    box.textContent=jokes[xfnv1a('j'+cycle)%jokes.length];
+  }
+}
 
 /* ----- Hover preview (unchanged) ----- */
 let tip=null;
