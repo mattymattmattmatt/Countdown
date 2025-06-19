@@ -110,7 +110,8 @@ function ring(){const n=new Date(),nx=new Date(n);nx.setHours(n.getHours()+1,0,0
   pie.style.background=`conic-gradient(var(--accent-color) ${(d/36e5)*360}deg,transparent 0deg)`;}
 ring();setInterval(ring,250);
 
-/* ----- Fun facts / Jokes every 10 min ----- */
+/* ----- Fun fact for first 10 minutes of each hour,
+   then a joke for the next 10, alternating ----- */
 let facts=[],jokes=[];
 function scheduleNext(){
   const now=Date.now()+new Date().getTimezoneOffset()*60000;
@@ -122,10 +123,12 @@ Promise.all([
   fetch('jokes.json').then(r=>r.ok?r.json():[])
 ]).then(([f,j])=>{facts=f;jokes=j;updateText();scheduleNext();});
 function updateText(){
-  const cycle=Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/600000);
+  const now=new Date(Date.now()+new Date().getTimezoneOffset()*60000);
+  const cycle=Math.floor(now.getTime()/600000); // for randomness
+  const seg=Math.floor(now.getMinutes()/10);    // minute segment of the hour
   const title=document.getElementById('funTitle');
   const box=document.getElementById('funFact');
-  if(!jokes.length || (facts.length && cycle%2===0)){
+  if(!jokes.length || (facts.length && seg%2===0)){
     title.textContent='Fun Fact:';
     box.textContent=facts.length?facts[xfnv1a('f'+cycle)%facts.length]:'...';
   }else{
