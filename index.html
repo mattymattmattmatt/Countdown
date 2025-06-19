@@ -121,7 +121,9 @@ function scheduleNext(){
 Promise.all([
   fetch('facts.json').then(r=>r.ok?r.json():[]),
   fetch('jokes.json').then(r=>r.ok?r.json():[])
-]).then(([f,j])=>{facts=f;jokes=j;updateText();scheduleNext();});
+]).then(([f,j])=>{facts=f;jokes=j;})
+  .catch(err=>{console.error('Failed to load facts or jokes',err);})
+  .finally(()=>{updateText();scheduleNext();});
 function updateText(){
   const now=new Date(Date.now()+new Date().getTimezoneOffset()*60000);
   const cycle=Math.floor(now.getTime()/600000); // for randomness
