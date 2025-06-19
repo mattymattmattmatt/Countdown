@@ -4,70 +4,36 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Countdown To Retirement</title>
-
-<!-- Google font -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap"/>
-
 <style>
-  :root{
-    --overlay-bg:rgba(0,0,0,.5);
-    --text-color:#fff;
-    --accent-color:#ffd700;
-    --f:'Poppins',sans-serif;
-  }
+  :root{--overlay-bg:rgba(0,0,0,.5);--text-color:#fff;--accent-color:#ffd700;--f:'Poppins',sans-serif}
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:100%;height:100%;overflow:hidden;position:relative;font-family:var(--f)}
-
-  /* Ken-Burns background */
-  .background{
-    position:absolute;inset:0;
-    background-size:contain;background-position:center;background-repeat:no-repeat;
-    animation:kenburns 3600s ease-in-out infinite alternate;
-    transition:background-image .8s;
-  }
-  @keyframes kenburns{
-    from{transform:scale(1)}
-    to  {transform:scale(1.05) translate(-2%,-2%)}
-  }
-
-  /* Semi-transparent overlay frame */
-  .overlay{
-    position:absolute;inset:0;background:var(--overlay-bg);
-    display:flex;flex-direction:column;align-items:center;justify-content:center
-  }
-
-  /* Countdown numbers */
+  .background{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;
+              animation:kenburns 3600s ease-in-out infinite alternate;transition:background-image .8s}
+  @keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.05) translate(-2%,-2%)}} 
+  .overlay{position:absolute;inset:0;background:var(--overlay-bg);display:flex;flex-direction:column;align-items:center;justify-content:center}
   .timer{color:var(--text-color);text-shadow:0 4px 8px rgba(0,0,0,.7);text-align:center}
   .time-unit{display:inline-block;margin:0 1rem}
   .time-value{font-size:clamp(3rem,8vw,6rem);font-weight:800;opacity:.6;transition:transform .3s,color .3s}
   .time-value.animate{transform:scale(1.2);color:var(--accent-color)}
   .label{font-size:clamp(.75rem,2vw,1.2rem);letter-spacing:2px;margin-top:.2rem}
-  body.simple .months-unit{display:none}   /* hide month column in simple view */
-
-  /* Fact / Joke block */
+  body.simple .months-unit{display:none}
   .content-container{text-align:center;margin-top:.4rem;max-width:70%}
   #contentTitle{font-weight:600;font-size:.85rem;color:var(--text-color);opacity:.75;margin-bottom:.2rem}
   #contentText{font-style:italic;font-size:.75rem;color:var(--text-color);text-shadow:0 0 3px rgba(0,0,0,.4);opacity:.75}
-
-  /* Pie-wedge timer bottom-right */
   .image-countdown-wrapper{position:absolute;bottom:10px;right:10px;display:flex;align-items:center;gap:4px}
   .pie-timer{width:18px;height:18px;border-radius:50%;transform:scaleX(-1);background:conic-gradient(var(--accent-color)360deg,transparent 0deg)}
   .image-countdown{font-size:.65rem;color:rgba(255,255,255,.8);text-shadow:0 0 4px rgba(0,0,0,.3)}
-
-  /* Toggle button */
-  #toggleView{
-    position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;border:none;
-    padding:.5rem .75rem;font-size:.75rem;border-radius:4px;cursor:pointer;opacity:.8
-  }
+  #toggleView{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;border:none;
+              padding:.5rem .75rem;font-size:.75rem;border-radius:4px;cursor:pointer;opacity:.8}
   #toggleView:hover{opacity:1}
 </style>
 </head>
 <body>
 
-<!-- Background image -->
 <div class="background" id="background"></div>
 
-<!-- Overlay with countdown & text -->
 <div class="overlay">
   <div class="timer" aria-live="polite">
     <div class="time-unit months-unit"><div class="time-value" id="months">00</div><div class="label">Months</div></div>
@@ -81,110 +47,105 @@
   </div>
 </div>
 
-<!-- Pie ring + label -->
 <div class="image-countdown-wrapper">
   <div class="pie-timer" id="pieTimer"></div>
   <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
 </div>
 
-<!-- Simple / Full toggle -->
 <button id="toggleView">Simple View</button>
 
 <script>
-/* ====== COUNTDOWN ====== */
+/* ---------- Countdown ---------- */
 const retire = Date.parse("2025-08-15T17:30:00");
 function animate(id,v){const e=document.getElementById(id);if(e&&e.textContent!==v){e.textContent=v;e.classList.add('animate');setTimeout(()=>e.classList.remove('animate'),300);}}
-function countdownTick(){
-  const diff = retire - Date.now(); if(diff<=0)return;
-  const hrs  = Math.floor((diff%864e5)/36e5);
+function countTick(){
+  const diff=retire-Date.now();if(diff<=0)return;
+  const hrs=Math.floor((diff%864e5)/36e5);
   if(document.body.classList.contains('simple')){
-    animate('days',  String(Math.floor(diff/864e5)).padStart(2,'0'));
-    animate('hours', String(hrs).padStart(2,'0'));
-    animate('months','');
+    animate('days',String(Math.floor(diff/864e5)).padStart(2,'0')); animate('hours',String(hrs).padStart(2,'0')); animate('months','');
   }else{
     animate('months',String(Math.floor(diff/2592e6)).padStart(2,'0'));
     animate('days',  String(Math.floor((diff%2592e6)/864e5)).padStart(2,'0'));
     animate('hours', String(hrs).padStart(2,'0'));
   }
 }
-countdownTick(); setInterval(countdownTick,250);
+countTick(); setInterval(countTick,250);
 
-/* ====== IMAGE SHUFFLE ====== */
+/* ---------- Shuffle helpers ---------- */
 function hash(s){let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0;}
 function rng(a){return()=>((a=Math.imul(a^=a>>>15|1,1|a))^(a+Math.imul(a^a>>>7,61|a)))>>>0/4294967296;}
 
-const totalImages = 160, seed = "batmanisgod22";            // ← update count as needed
-const digits = String(totalImages).length;                  // auto filename width (160 → 3)
-function getShuffledImages(){
-  const hc = Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5);
-  const cycle = Math.floor(hc/totalImages), r = rng(hash(seed+'-'+cycle));
-  const arr = [...Array(totalImages)].map((_,i)=>String(i+1).padStart(digits,'0')+'.png');
+const totalImages=160,seed="batmanisgod22";
+function fileName(n){return (n<100?String(n).padStart(2,'0'):String(n))+'.png';}
+let currentShuffle=[];
+
+function shuffleList(){
+  const hc=Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5);
+  const cycle=Math.floor(hc/totalImages),r=rng(hash(seed+'-'+cycle));
+  const arr=[...Array(totalImages)].map((_,i)=>fileName(i+1));
   for(let i=arr.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
   return arr;
 }
 
-/* set initial background */
+/* ---------- Set background ---------- */
 function setImage(){
-  const imgs = getShuffledImages();
-  const idx  = Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5) % imgs.length;
-  document.getElementById('background').style.backgroundImage = `url('images/${imgs[idx]}')`;
+  currentShuffle=shuffleList();
+  const idx=Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5)%currentShuffle.length;
+  document.getElementById('background').style.backgroundImage=`url('images/${currentShuffle[idx]}')`;
 }
 setImage();
-/* reload page top of hour */
+/* reload page when local hour rolls over */
 (function(){const n=new Date(),t=new Date(n);t.setHours(n.getHours()+1,0,0,0);setTimeout(()=>location.reload(),t-n+50)})();
 
-/* ====== PIE RING ====== */
+/* ---------- Pie ring ---------- */
 const pie=document.getElementById('pieTimer'),lbl=document.getElementById('imageCountdown');
 function ringTick(){
-  const now=new Date(),next=new Date(now);next.setHours(now.getHours()+1,0,0,0);
-  const diff=next-now, m=Math.floor((diff%36e5)/6e4), s=Math.floor((diff%6e4)/1e3);
+  const n=new Date(),nx=new Date(n);nx.setHours(n.getHours()+1,0,0,0);
+  const diff=nx-n,m=Math.floor((diff%36e5)/6e4),s=Math.floor((diff%6e4)/1e3);
   lbl.textContent=`Next image in ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   pie.style.background=`conic-gradient(var(--accent-color) ${(diff/36e5)*360}deg,transparent 0deg)`;
 }
 ringTick(); setInterval(ringTick,250);
 
-/* ====== FACTS & JOKES ====== */
+/* ---------- Facts & Jokes ---------- */
 let facts=[],jokes=[];
-const fetchJSON= p => fetch(p).then(r=>r.ok?r.json():[]);
-Promise.allSettled([fetchJSON('facts.json'),fetchJSON('jokes.json')]).then(async res=>{
+const fetchJson=p=>fetch(p).then(r=>r.ok?r.json():[]);
+Promise.allSettled([fetchJson('facts.json'),fetchJson('jokes.json')]).then(async res=>{
   if(res[0].status==='fulfilled')facts=res[0].value;
   if(res[1].status==='fulfilled')jokes=res[1].value;
-  textTick(); setInterval(textTick,600000);          // every 10 min
+  textTick(); setInterval(textTick,600000);
 });
 function textTick(){
   const hc=Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5);
-  const even = hc%2===0,   title=document.getElementById('contentTitle'), txt=document.getElementById('contentText');
-  if(even && facts.length){title.textContent='Fun Fact:'; txt.textContent=facts[hash('f'+hc)%facts.length];}
-  else if(jokes.length)    {title.textContent='Joke:';     txt.textContent=jokes[hash('j'+hc)%jokes.length];}
-  else                     {title.textContent='Content:';  txt.textContent='(no data)';}
+  const even=hc%2===0,title=document.getElementById('contentTitle'),txt=document.getElementById('contentText');
+  if(even&&facts.length){title.textContent='Fun Fact:';txt.textContent=facts[hash('f'+hc)%facts.length];}
+  else if(jokes.length){title.textContent='Joke:';txt.textContent=jokes[hash('j'+hc)%jokes.length];}
+  else{title.textContent='Content:';txt.textContent='(no data)';}
 }
 
-/* ====== TOGGLE VIEW ====== */
+/* ---------- Toggle ---------- */
 document.getElementById('toggleView').onclick=()=>{
-  document.body.classList.toggle('simple'); countdownTick();
+  document.body.classList.toggle('simple');countTick();
   document.getElementById('toggleView').textContent=document.body.classList.contains('simple')?'Full View':'Simple View';
 };
 
-/* ====== ORIGINAL HOVER PREVIEW ====== */
-let tip=null;
+/* ---------- Hover preview (uses currentShuffle) ---------- */
+let thumb=null;
 lbl.addEventListener('mouseenter',()=>{
-  const imgs=getShuffledImages();
-  const nextIdx=(Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5)+1)%imgs.length;
-  tip=document.createElement('img');
-  tip.src=`images/${imgs[nextIdx]}`;
-  Object.assign(tip.style,{
-    position:'absolute',width:'100px',pointerEvents:'none',
-    border:`2px solid var(--accent-color)`,boxShadow:'0 2px 6px rgba(0,0,0,.3)'
-  });
-  document.body.appendChild(tip);
+  if(!currentShuffle.length) currentShuffle=shuffleList();
+  const nextIdx=(Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5)+1)%currentShuffle.length;
+  if(!currentShuffle[nextIdx]) return;
+  thumb=document.createElement('img');
+  thumb.src=`images/${currentShuffle[nextIdx]}`;
+  Object.assign(thumb.style,{position:'absolute',width:'100px',pointerEvents:'none',
+    border:`2px solid var(--accent-color)`,boxShadow:'0 2px 6px rgba(0,0,0,.35)'});
+  document.body.appendChild(thumb);
 });
 lbl.addEventListener('mousemove',e=>{
-  if(!tip)return;
-  const w=tip.offsetWidth,h=tip.offsetHeight;
-  tip.style.left=`${e.pageX-w}px`;
-  tip.style.top =`${e.pageY-h}px`;
+  if(thumb){thumb.style.left=`${e.pageX-.thumb.offsetWidth}px`;
+            thumb.style.top =`${e.pageY-.thumb.offsetHeight}px`; }
 });
-lbl.addEventListener('mouseleave',()=>{if(tip){tip.remove();tip=null;}});
+lbl.addEventListener('mouseleave',()=>{if(thumb){thumb.remove();thumb=null;}});
 </script>
 </body>
 </html>
