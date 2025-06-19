@@ -6,28 +6,27 @@
 <title>Countdown To Retirement</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap"/>
 <style>
-  :root{--overlay-bg:rgba(0,0,0,0.5);--text-color:#fff;--accent-color:#ffd700;--f:'Poppins',sans-serif}
+  :root{--overlay-bg:rgba(0,0,0,.5);--text-color:#fff;--accent-color:#ffd700;--f:'Poppins',sans-serif}
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:100%;height:100%;overflow:hidden;position:relative;font-family:var(--f)}
   .background{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;
               animation:kenburns 3600s ease-in-out infinite alternate;transition:background-image .8s}
   @keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.05) translate(-2%,-2%)}}
-  .overlay{position:absolute;inset:0;background:var(--overlay-bg);display:flex;flex-direction:column;
-           align-items:center;justify-content:center}
+  .overlay{position:absolute;inset:0;background:var(--overlay-bg);display:flex;flex-direction:column;align-items:center;justify-content:center}
   .timer{color:var(--text-color);text-shadow:0 4px 8px rgba(0,0,0,.7);text-align:center}
   .time-unit{display:inline-block;margin:0 1rem}
   .time-value{font-size:clamp(3rem,8vw,6rem);font-weight:800;opacity:.6;transition:transform .3s,color .3s}
   .time-value.animate{transform:scale(1.2);color:var(--accent-color)}
   .label{font-size:clamp(.75rem,2vw,1.2rem);letter-spacing:2px;margin-top:.2rem}
-  body.simple .months-unit{display:none}
+  body.simple .months-unit{display:none}                  /* hide months column */
   .content-container{text-align:center;margin-top:.4rem;max-width:70%}
   #contentTitle{font-weight:600;font-size:.85rem;color:var(--text-color);opacity:.75;margin-bottom:.2rem}
   #contentText{font-style:italic;font-size:.75rem;color:var(--text-color);text-shadow:0 0 3px rgba(0,0,0,.4);opacity:.75}
   .image-countdown-wrapper{position:absolute;bottom:10px;right:10px;display:flex;align-items:center;gap:4px}
   .pie-timer{width:18px;height:18px;border-radius:50%;transform:scaleX(-1);background:conic-gradient(var(--accent-color)360deg,transparent 0deg)}
   .image-countdown{font-size:.65rem;color:rgba(255,255,255,.8);text-shadow:0 0 4px rgba(0,0,0,.3)}
-  #toggleView{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;border:none;
-              padding:.5rem .75rem;font-size:.75rem;border-radius:4px;cursor:pointer;opacity:.8}
+  #toggleView{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;border:none;padding:.5rem .75rem;
+              font-size:.75rem;border-radius:4px;cursor:pointer;opacity:.8}
   #toggleView:hover{opacity:1}
 </style>
 </head>
@@ -36,18 +35,21 @@
 <div class="background" id="background"></div>
 
 <div class="overlay">
+  <!-- Countdown -->
   <div class="timer" aria-live="polite">
     <div class="time-unit months-unit"><div class="time-value" id="months">00</div><div class="label">Months</div></div>
     <div class="time-unit"><div class="time-value" id="days">00</div><div class="label">Days</div></div>
     <div class="time-unit"><div class="time-value" id="hours">00</div><div class="label">Hours</div></div>
   </div>
 
+  <!-- Fact / Joke -->
   <div class="content-container">
     <div id="contentTitle">Loading…</div>
     <div id="contentText"></div>
   </div>
 </div>
 
+<!-- Pie ring -->
 <div class="image-countdown-wrapper">
   <div class="pie-timer" id="pieTimer"></div>
   <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
@@ -56,26 +58,23 @@
 <button id="toggleView">Simple View</button>
 
 <script>
-/* ---- Countdown ---- */
-const retire = new Date("2025-08-15T17:30:00").getTime();
-function animate(id,v){const e=document.getElementById(id);if(e&&e.innerText!==v){e.innerText=v;e.classList.add('animate');
-setTimeout(()=>e.classList.remove('animate'),300);}}
+/* ----- Countdown ----- */
+const retire=Date.parse("2025-08-15T17:30:00");
+function anim(id,v){const e=document.getElementById(id);if(e&&e.textContent!==v){e.textContent=v;e.classList.add('animate');setTimeout(()=>e.classList.remove('animate'),300);}}
 function tick(){
   const d=retire-Date.now();if(d<=0)return;
   const hrs=Math.floor((d%864e5)/36e5);
   if(document.body.classList.contains('simple')){
-    animate('days',String(Math.floor(d/864e5)).padStart(2,'0'));
-    animate('hours',String(hrs).padStart(2,'0'));
-    animate('months','');
+    anim('days',String(Math.floor(d/864e5)).padStart(2,'0'));anim('hours',String(hrs).padStart(2,'0'));anim('months','');
   }else{
-    animate('months',String(Math.floor(d/2592e6)).padStart(2,'0'));
-    animate('days',String(Math.floor((d%2592e6)/864e5)).padStart(2,'0'));
-    animate('hours',String(hrs).padStart(2,'0'));
+    anim('months',String(Math.floor(d/2592e6)).padStart(2,'0'));
+    anim('days',String(Math.floor((d%2592e6)/864e5)).padStart(2,'0'));
+    anim('hours',String(hrs).padStart(2,'0'));
   }
 }
 tick();setInterval(tick,250);
 
-/* ---- Image shuffle ---- */
+/* ----- Image shuffle ----- */
 function hash(s){let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0;}
 function rng(a){return()=>((a=Math.imul(a^=a>>>15|1,1|a))^(a+Math.imul(a^a>>>7,61|a)))>>>0/4294967296;}
 const totalImages=137,seed="batmanisgod22";
@@ -83,48 +82,43 @@ function shuffled(){
   const hc=Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5);
   const cycle=Math.floor(hc/totalImages),r=rng(hash(seed+'-'+cycle));
   const arr=[...Array(totalImages)].map((_,i)=>String(i+1).padStart(2,'0')+'.png');
-  for(let i=arr.length-1;i>0;i--){const j=Math.floor(r()* (i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
-  return arr;
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(r()* (i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;
 }
 function setImage(){
   const imgs=shuffled(),idx=Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5)%totalImages;
   document.getElementById('background').style.backgroundImage=`url('./images/${imgs[idx]}')`;
 }
-setImage();                       /* initial */
+setImage(); /* reload next hour */ 
 (function(){const n=new Date(),t=new Date(n);t.setHours(n.getHours()+1,0,0,0);setTimeout(()=>location.reload(),t-n+50)})();
 
-/* ---- Pie ring ---- */
+/* ----- Pie ring ----- */
 const pie=document.getElementById('pieTimer'),lbl=document.getElementById('imageCountdown');
-function ring(){
-  const n=new Date(),nx=new Date(n);nx.setHours(n.getHours()+1,0,0,0);
-  const d=nx-n;lbl.innerText=`Next image in ${String(Math.floor((d%36e5)/6e4)).padStart(2,'0')}:${String(Math.floor((d%6e4)/1e3)).padStart(2,'0')}`;
-  pie.style.background=`conic-gradient(var(--accent-color) ${d/36e5*360}deg,transparent 0deg)`;
-}
+function ring(){const n=new Date(),nx=new Date(n);nx.setHours(n.getHours()+1,0,0,0);
+  const d=nx-n;lbl.textContent=`Next image in ${String(Math.floor((d%36e5)/6e4)).padStart(2,'0')}:${String(Math.floor((d%6e4)/1e3)).padStart(2,'0')}`;
+  pie.style.background=`conic-gradient(var(--accent-color) ${d/36e5*360}deg,transparent 0deg)`;}
 ring();setInterval(ring,250);
 
-/* ---- Facts & Jokes ---- */
+/* ----- Facts & Jokes ----- */
 let facts=[],jokes=[];
-const fetchJSON=p=>fetch(p).then(r=>r.ok?r.json():[]);
-if(location.protocol.startsWith('http')){
-  Promise.all([fetchJSON('./facts.json'),fetchJSON('./jokes.json')]).then(([f,j])=>{facts=f;jokes=j;update();setInterval(update,6e5);});
-}else{ /* fallback for file:// */ 
-  facts=["Running locally? Open via a web server to load real facts."];
-  jokes=["Why was the webpage sad? It had too many broken links."];
-  update();setInterval(update,6e5);
-}
-function update(){
+const getJSON=p=>fetch(p).then(r=>r.ok?r.json():[]);
+Promise.allSettled([getJSON('./facts.json'),getJSON('./jokes.json')]).then(async res=>{
+  if(res[0].status==='fulfilled')facts=res[0].value;
+  if(res[1].status==='fulfilled')jokes=res[1].value;
+  updateText();setInterval(updateText,6e5);   /* every 10 min */
+});
+function updateText(){
   const hc=Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5);
-  const odd=hc%2,title=document.getElementById('contentTitle'),txt=document.getElementById('contentText');
-  if(odd&&jokes.length){title.textContent='Joke:';txt.textContent=jokes[hash('j'+hc)%jokes.length];}
+  const title=document.getElementById('contentTitle'),txt=document.getElementById('contentText');
+  if(hc%2===1 && jokes.length){title.textContent='Joke:';txt.textContent=jokes[hash('j'+hc)%jokes.length];}
   else if(facts.length){title.textContent='Fun Fact:';txt.textContent=facts[hash('f'+hc)%facts.length];}
   else{title.textContent='Content:';txt.textContent='(no data)';}
 }
 
-/* ---- Toggle view ---- */
+/* ----- Toggle view ----- */
 document.getElementById('toggleView').onclick=()=>{document.body.classList.toggle('simple');tick();
   document.getElementById('toggleView').textContent=document.body.classList.contains('simple')?'Full View':'Simple View';};
 
-/* ---- Hover preview ---- */
+/* ----- Hover next-image preview ----- */
 let tip=null;
 lbl.addEventListener('mouseenter',()=>{
   const imgs=shuffled(),nextIdx=(Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5)+1)%totalImages;
