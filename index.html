@@ -1,97 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Countdown To Retirement</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap" rel="stylesheet"/>
-<style>
-  :root{--overlay-bg:rgba(0,0,0,.5);--text-color:#fff;--accent-color:#ffd700;--f:'Poppins',sans-serif}
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:100%;height:100%;overflow:hidden;position:relative;font-family:var(--f)}
-  /* Ken-Burns background */
-  .background{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;
-              animation:kenburns 3600s ease-in-out infinite alternate;transition:background-image .8s}
-  @keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.05) translate(-2%,-2%)}}
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Countdown To Retirement</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--overlay-bg:rgba(0,0,0,0.5);--text-color:#fff;--font-family:'Poppins',sans-serif;--accent-color:#ffd700;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{width:100%;height:100%;overflow:hidden;position:relative;}
 
-  /* Overlay + timer */
-  .overlay{position:absolute;inset:0;background:var(--overlay-bg);display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .timer{color:var(--text-color);text-shadow:0 4px 8px rgba(0,0,0,.7);text-align:center}
-  .time-unit{display:inline-block;margin:0 1rem}
-  .time-value{font-size:clamp(3rem,8vw,6rem);font-weight:800;opacity:.6;transition:transform .3s,color .3s}
-  .time-value.animate{transform:scale(1.2);color:var(--accent-color)}
-  .label{font-size:clamp(.75rem,2vw,1.2rem);letter-spacing:2px;margin-top:.2rem}
-  body.simple .months-unit{display:none}                         /* hide months in simple mode */
+    .background{position:absolute;top:0;left:0;width:100%;height:100%;
+      background-size:contain;background-position:center;background-repeat:no-repeat;
+      animation:kenburns 3600s ease-in-out infinite alternate;
+      transition:background-image .8s;}
+    @keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.05) translate(-2%,-2%)}}
 
-  /* Fact / Joke */
-  .content-container{text-align:center;margin-top:.4rem;max-width:70%}
-  #contentTitle{font-weight:600;font-size:.85rem;color:var(--text-color);opacity:.75;margin-bottom:.2rem}
-  #contentText{font-style:italic;font-size:.75rem;color:var(--text-color);text-shadow:0 0 3px rgba(0,0,0,.4);opacity:.75}
+    .overlay{position:absolute;inset:0;background:var(--overlay-bg);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;}
 
-  /* Pie-ring timer */
-  .image-countdown-wrapper{position:absolute;bottom:10px;right:10px;display:flex;align-items:center;gap:4px}
-  .pie-timer{width:18px;height:18px;border-radius:50%;transform:scaleX(-1);background:conic-gradient(var(--accent-color)360deg,transparent 0deg)}
-  .image-countdown{font-size:.65rem;color:rgba(255,255,255,.8);text-shadow:0 0 4px rgba(0,0,0,.3)}
+    .timer{font-family:var(--font-family);color:var(--text-color);text-align:center;
+      text-shadow:0 4px 8px rgba(0,0,0,.7);}
+    .time-unit{display:inline-block;margin:0 1rem;}
+    .time-value{font-size:clamp(3rem,8vw,6rem);font-weight:800;opacity:.6;
+      transition:transform .3s,color .3s;}
+    .time-value.animate{transform:scale(1.2);color:var(--accent-color);}
+    .label{font-size:clamp(.75rem,2vw,1.2rem);letter-spacing:2px;margin-top:.2rem;}
 
-  /* Toggle button */
-  #toggleView{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;border:none;
-              padding:.5rem .75rem;font-size:.75rem;border-radius:4px;cursor:pointer;opacity:.8}
-  #toggleView:hover{opacity:1}
-</style>
+    /* --- NEW: hide month column in simple mode --- */
+    body.simple .months-unit{display:none;}
+
+    .content-container{text-align:center;margin-top:.4rem;max-width:70%;}
+    #contentTitle{font-family:var(--font-family);color:var(--text-color);
+      font-weight:600;font-size:.85rem;opacity:.75;margin-bottom:.2rem;}
+    #contentText{font-family:var(--font-family);font-style:italic;font-size:.75rem;
+      color:var(--text-color);text-shadow:0 0 3px rgba(0,0,0,.4);opacity:.75;}
+
+    .image-countdown-wrapper{position:absolute;bottom:10px;right:10px;
+      display:flex;align-items:center;gap:4px;font-family:var(--font-family);}
+    .pie-timer{width:18px;height:18px;border-radius:50%;transform:scaleX(-1);
+      background:conic-gradient(var(--accent-color) 360deg,transparent 0deg);}
+    .image-countdown{font-size:.65rem;color:rgba(255,255,255,.8);
+      text-shadow:0 0 4px rgba(0,0,0,.3);}
+
+    #toggleView{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.6);
+      color:#fff;border:none;padding:.5rem .75rem;font-family:var(--font-family);
+      font-size:.75rem;border-radius:4px;cursor:pointer;opacity:.8;}
+    #toggleView:hover{opacity:1;}
+
+    /* modal styles remain unchanged */
+  </style>
 </head>
 <body>
 
-<div class="background" id="background"></div>
+  <div class="background" id="background"></div>
 
-<div class="overlay">
-  <!-- Countdown -->
-  <div class="timer" aria-live="polite">
-    <div class="time-unit months-unit"><div class="time-value" id="months">00</div><div class="label">Months</div></div>
-    <div class="time-unit"><div class="time-value" id="days">00</div><div class="label">Days</div></div>
-    <div class="time-unit"><div class="time-value" id="hours">00</div><div class="label">Hours</div></div>
+  <div class="overlay">
+    <div class="timer" role="timer" aria-live="polite">
+      <div class="time-unit months-unit">
+        <div class="time-value" id="months">00</div><div class="label">Months</div>
+      </div>
+      <div class="time-unit">
+        <div class="time-value" id="days">00</div><div class="label">Days</div>
+      </div>
+      <div class="time-unit">
+        <div class="time-value" id="hours">00</div><div class="label">Hours</div>
+      </div>
+    </div>
+
+    <div class="content-container">
+      <div id="contentTitle">Loading…</div>
+      <div id="contentText"></div>
+    </div>
   </div>
 
-  <!-- Fact / Joke -->
-  <div class="content-container">
-    <div id="contentTitle">Loading…</div>
-    <div id="contentText"></div>
+  <div class="image-countdown-wrapper">
+    <div class="pie-timer" id="pieTimer"></div>
+    <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
   </div>
-</div>
 
-<!-- Pie-timer -->
-<div class="image-countdown-wrapper">
-  <div class="pie-timer" id="pieTimer"></div>
-  <div class="image-countdown" id="imageCountdown">Next image in 00:00</div>
-</div>
-
-<!-- Toggle view -->
-<button id="toggleView">Simple View</button>
+  <button id="toggleView">Simple View</button>
 
 <script>
-/* ---------- Countdown ---------- */
+/* -------- Countdown logic (unchanged) -------- */
 const countdownDate=new Date("2025-08-15T17:30:00").getTime();
-function animate(id,v){const e=document.getElementById(id);if(e&&e.innerText!==v){e.innerText=v;e.classList.add('animate');setTimeout(()=>e.classList.remove('animate'),300);}}
-function tickCountdown(){
-  const diff=countdownDate-Date.now(); if(diff<=0)return;
-  const hrs=Math.floor((diff%864e5)/36e5);
-  if(document.body.classList.contains('simple')){
-    animate('months','');                     // blank (hidden anyway)
-    animate('days',String(Math.floor(diff/864e5)).padStart(2,'0'));
-  }else{
-    animate('months',String(Math.floor(diff/2592e6)).padStart(2,'0'));
-    animate('days',String(Math.floor((diff%2592e6)/864e5)).padStart(2,'0'));
-  }
-  animate('hours',String(hrs).padStart(2,'0'));
+function animateValue(id,val){
+  const el=document.getElementById(id);
+  if(el&&el.innerText!==val){el.innerText=val;el.classList.add('animate');
+    setTimeout(()=>el.classList.remove('animate'),300);}
 }
-tickCountdown();setInterval(tickCountdown,250);
+function updateCountdown(){
+  const now=Date.now(),diff=countdownDate-now;if(diff<=0)return;
+  if(document.body.classList.contains('simple')){
+    const totalDays=Math.floor(diff/864e5);
+    const hours=Math.floor((diff%864e5)/36e5);
+    animateValue('days',String(totalDays).padStart(2,'0'));
+    animateValue('hours',String(hours).padStart(2,'0'));
+  }else{
+    const months=Math.floor(diff/2592e6);
+    const days=Math.floor((diff%2592e6)/864e5);
+    const hours=Math.floor((diff%864e5)/36e5);
+    animateValue('months',String(months).padStart(2,'0'));
+    animateValue('days',String(days).padStart(2,'0'));
+    animateValue('hours',String(hours).padStart(2,'0'));
+  }
+}
+updateCountdown();setInterval(updateCountdown,250);
 
-/* ---------- Image shuffle ---------- */
+/* -------- Image shuffle / reload (unchanged) -------- */
 function hash(s){let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0;}
 function rng(a){return()=>((a=Math.imul(a^=a>>>15|1,1|a))^(a+Math.imul(a^a>>>7,61|a)))>>>0/4294967296;}
-const totalImages=137,seedBase="batmanisgod22";
+const totalImages=137,seed="batmanisgod22";
 function shuffled(){
-  const now=new Date();const hc=Math.floor((Date.now()+now.getTimezoneOffset()*60000)/36e5);
-  const cycle=Math.floor(hc/totalImages), r=rng(hash(seedBase+'-'+cycle));
+  const now=new Date();
+  const hc=Math.floor((Date.now()+now.getTimezoneOffset()*60000)/36e5);
+  const cycle=Math.floor(hc/totalImages),r=rng(hash(seed+'-'+cycle));
   const arr=[...Array(totalImages)].map((_,i)=>String(i+1).padStart(2,'0')+'.png');
   for(let i=arr.length-1;i>0;i--){const j=Math.floor(r()* (i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
   return arr;
@@ -102,47 +125,55 @@ function setImage(){
   document.getElementById('background').style.backgroundImage=`url('images/${imgs[idx]}')`;
 }
 setImage();
-/* reload top of local hour */
-(function(){const now=new Date();const t=new Date(now);t.setHours(now.getHours()+1,0,0,0);setTimeout(()=>location.reload(),t-now+50)})();
+(function(){const n=new Date(),t=new Date(n);t.setHours(n.getHours()+1,0,0,0);
+  setTimeout(()=>location.reload(),t-n+50)})();
 
-/* ---------- Pie-ring ---------- */
+/* -------- Pie-ring (unchanged) -------- */
 const pie=document.getElementById('pieTimer'),lbl=document.getElementById('imageCountdown');
-function tickRing(){
-  const n=new Date(), nxt=new Date(n);nxt.setHours(n.getHours()+1,0,0,0);
-  const d=nxt-n; lbl.innerText=`Next image in ${String(Math.floor((d%36e5)/6e4)).padStart(2,'0')}:${String(Math.floor((d%6e4)/1e3)).padStart(2,'0')}`;
+function updateRing(){
+  const n=new Date(),next=new Date(n);next.setHours(n.getHours()+1,0,0,0);
+  const d=next-n;lbl.innerText=`Next image in ${String(Math.floor((d%36e5)/6e4)).padStart(2,'0')}:${String(Math.floor((d%6e4)/1e3)).padStart(2,'0')}`;
   pie.style.background=`conic-gradient(var(--accent-color) ${d/36e5*360}deg,transparent 0deg)`;
 }
-tickRing();setInterval(tickRing,250);
+updateRing();setInterval(updateRing,250);
 
-/* ---------- Facts & Jokes ---------- */
+/* -------- Load facts & jokes gracefully -------- */
 let facts=[],jokes=[];
 Promise.allSettled([fetch('facts.json'),fetch('jokes.json')]).then(async res=>{
   if(res[0].status==='fulfilled') facts=await res[0].value.json();
   if(res[1].status==='fulfilled') jokes=await res[1].value.json();
-  updateContent();setInterval(updateContent,6e5);          // refresh every 10 min
+  showContent();setInterval(showContent,6e5);   // refresh every 10 min
 });
-function updateContent(){
-  const now=new Date();const hc=Math.floor((Date.now()+now.getTimezoneOffset()*60000)/36e5);
+function showContent(){
+  const now=new Date();
+  const hc=Math.floor((Date.now()+now.getTimezoneOffset()*60000)/36e5);
   const isJoke=hc%2===1,title=document.getElementById('contentTitle'),text=document.getElementById('contentText');
-  if(isJoke&&jokes.length){title.textContent='Joke:';text.textContent=jokes[hash('j'+hc)%jokes.length];}
-  else if(facts.length){title.textContent='Fun Fact:';text.textContent=facts[hash('f'+hc)%facts.length];}
-  else{title.textContent='Content:';text.textContent='(none loaded)';}
+  if(isJoke&&jokes.length){
+    title.textContent='Joke:';text.textContent=jokes[hash('j'+hc)%jokes.length];
+  }else if(facts.length){
+    title.textContent='Fun Fact:';text.textContent=facts[hash('f'+hc)%facts.length];
+  }else{
+    title.textContent='Content:';text.textContent='(no data loaded)';
+  }
 }
 
-/* ---------- Toggle view ---------- */
-document.getElementById('toggleView').onclick=()=>{document.body.classList.toggle('simple');tickCountdown();
-  document.getElementById('toggleView').textContent=document.body.classList.contains('simple')?'Full View':'Simple View';};
+/* -------- Toggle view -------- */
+document.getElementById('toggleView').onclick=()=>{
+  document.body.classList.toggle('simple');updateCountdown();
+  document.getElementById('toggleView').textContent=document.body.classList.contains('simple')?'Full View':'Simple View';
+};
 
-/* ---------- Hover preview ---------- */
+/* -------- Hover preview (unchanged) -------- */
 let tip=null;
 lbl.addEventListener('mouseenter',()=>{
-  const imgs=shuffled();const nextIdx=(Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5)+1)%totalImages;
-  tip=document.createElement('img');tip.src=`images/${imgs[nextIdx]}`;Object.assign(tip.style,{position:'absolute',width:'100px',
+  const imgs=shuffled();
+  const nextIdx=(Math.floor((Date.now()+new Date().getTimezoneOffset()*60000)/36e5)+1)%totalImages;
+  tip=document.createElement('img');tip.src=`images/${imgs[nextIdx]}`;
+  Object.assign(tip.style,{position:'absolute',width:'100px',
     border:`2px solid var(--accent-color)`,boxShadow:'0 2px 6px rgba(0,0,0,.3)'});document.body.appendChild(tip);});
 lbl.addEventListener('mousemove',e=>{if(tip){tip.style.left=`${e.pageX-tip.offsetWidth}px`;tip.style.top=`${e.pageY-tip.offsetHeight}px`;}} );
 lbl.addEventListener('mouseleave',()=>{if(tip){tip.remove();tip=null;}});
 
-/* ---------- End ---------- */
 </script>
 </body>
 </html>
